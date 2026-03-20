@@ -1,0 +1,132 @@
+services:
+  api:
+    build:
+      context: ./services/api
+    container_name: university-hpc-api
+    environment:
+      PORT: "8080"
+      SERVICE_NAME: "demo-api"
+      SERVICE_VERSION: "v2"
+      DEPLOYMENT_ENVIRONMENT: "demo"
+      LOG_LEVEL: "info"
+      ENABLE_TRACING: "true"
+      TEMPO_ENDPOINT: "http://tempo:4318/v1/traces"
+      DEPENDENCY_URL: "http://dependency:8080"
+      OTEL_SERVICE_NAME: "demo-api"
+      OTEL_RESOURCE_ATTRIBUTES: "service.version=v2,deployment.environment=demo"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - dependency
+      - tempo
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  dependency:
+    build:
+      context: ./services/dependency
+    container_name: university-hpc-dependency
+    environment:
+      PORT: "8080"
+      SERVICE_NAME: "demo-dependency"
+      SERVICE_VERSION: "v2"
+      DEPLOYMENT_ENVIRONMENT: "demo"
+      LOG_LEVEL: "info"
+      ENABLE_TRACING: "true"
+      TEMPO_ENDPOINT: "http://tempo:4318/v1/traces"
+      OTEL_SERVICE_NAME: "demo-dependency"
+      OTEL_RESOURCE_ATTRIBUTES: "service.version=v2,deployment.environment=demo"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: university-hpc-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - api
+      - dependency
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: university-hpc-grafana
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_FEATURE_TOGGLES_ENABLE: "traceqlEditor"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
+  loki:
+    image: grafana/loki:latest
+    container_name: university-hpc-loki
+    command:
+      - "-config.file=/etc/loki/config.yml"
+    volumes:
+      - ./observability/loki/config.yml:/etc/loki/config.yml:ro
+      - loki-data:/loki
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: university-hpc-promtail
+    command:
+      - "-config.file=/etc/promtail/config.yml"
+    volumes:
+      - ./observability/promtail/config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - loki
+
+  tempo:
+    image: grafana/tempo:2.6.0
+    container_name: university-hpc-tempo
+    command:
+      - "-config.file=/etc/tempo/tempo.yml"
+    volumes:
+      - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+
+  k6:
+    image: grafana/k6:latest
+    container_name: university-hpc-k6
+    profiles:
+      - loadtest
+    environment:
+      BASE_URL: "http://api:8080"
+    volumes:
+      - ./k6:/scripts:ro
+    depends_on:
+      - api
+    entrypoint: ["k6"]
+    command: ["run", "/scripts/smoke.js"]
+
+volumes:
+  grafana-data:
+  loki-data:
+  prometheus-data:
+  tempo-data:
