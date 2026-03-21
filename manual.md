@@ -481,6 +481,7 @@ Grafana provisions a folder named `HPC Demo` and loads these dashboards:
 - `System Overview`
 - `Infrastructure Overview`
 - `Load Test Correlation`
+- `Run Comparison`
 - `Endpoint Comparison`
 - `Dependency Health`
 - `Root Cause Drilldown`
@@ -490,6 +491,7 @@ Grafana provisions a folder named `HPC Demo` and loads these dashboards:
 - `System Overview`: application-centered runtime summary
 - `Infrastructure Overview`: host and container resource context
 - `Load Test Correlation`: puts load, latency, infrastructure, workload share, and target-vs-actual mix drift on the same page
+- `Run Comparison`: compares two selected `test_run_id` values with run-scoped `k6` summaries, workload composition, and run-filtered logs
 - `Endpoint Comparison`: compares route and `/api/report` mode behavior side by side
 - `Dependency Health`: focuses on outbound dependency effects, dependency share, and API/dependency overlays
 - `Root Cause Drilldown`: supports symptom-to-trace investigation
@@ -582,12 +584,13 @@ docker compose --profile loadtest run --rm -e BREAKPOINT_STEP_DURATION=60s -e BR
 3. Run `baseline.js`.
 4. Open `System Overview`, `Infrastructure Overview`, and `Load Test Correlation`.
 5. In `Load Test Correlation`, start at the `Workload Mix` row and compare intended share, actual share, and drift.
-6. Use `Endpoint Comparison` to compare route shape with `/api/report` mode shape.
-7. Use `Dependency Health` to decide whether the system is dependency-heavy or dependency-impaired.
-8. Run a contrasting scenario such as `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
-9. Run `degraded.js`.
-10. Repeat the route/mode and dependency comparison on the degraded run.
-11. Use Loki and Tempo from Grafana to move from symptoms to individual requests and traces, filtering by `test_run_id` when you need to isolate one run.
+6. Use `Run Comparison` when you want to compare repeated runs such as `baseline A` versus `baseline B`.
+7. Use `Endpoint Comparison` to compare route shape with `/api/report` mode shape.
+8. Use `Dependency Health` to decide whether the system is dependency-heavy or dependency-impaired.
+9. Run a contrasting scenario such as `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
+10. Run `degraded.js`.
+11. Repeat the route/mode and dependency comparison on the degraded run.
+12. Use Loki and Tempo from Grafana to move from symptoms to individual requests and traces, filtering by `test_run_id` when you need to isolate one run.
 
 ## How To Stop And Reset
 

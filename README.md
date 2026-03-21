@@ -107,6 +107,7 @@ In `Load Test Correlation`, start with the `Workload Mix` row:
 
 Then use:
 
+- `Run Comparison` to compare two selected `test_run_id` values directly
 - `Endpoint Comparison` for side-by-side route and `/api/report` mode behavior
 - `Dependency Health` for dependency share, latency, error overlays, and outcome split
 - Grafana logs and traces for drilldown, filtering by `test_run_id` when you need to isolate one run
