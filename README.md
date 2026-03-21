@@ -46,6 +46,8 @@ Grafana runs with anonymous admin access enabled for classroom simplicity.
 ## Dashboards
 
 - `System Overview`
+- `Infrastructure Overview`
+- `Load Test Correlation`
 - `Endpoint Comparison`
 - `Dependency Health`
 - `Root Cause Drilldown`
@@ -87,11 +89,14 @@ Report mode behavior:
 
 1. Start the stack.
 2. Run `baseline.js`.
-3. Inspect the `System Overview`, `Endpoint Comparison`, and `Dependency Health` dashboards.
+3. Inspect `System Overview`, `Infrastructure Overview`, and `Load Test Correlation` together to compare request rate, latency, active VUs, CPU, memory, disk, and network usage.
 4. Run `degraded.js`.
-5. Use Grafana logs and trace links to move from symptoms to root cause.
+5. Compare `Endpoint Comparison` and `Dependency Health` against the hardware dashboards to see whether the bottleneck is resource saturation or an application-level dependency slowdown.
+6. Use Grafana logs and trace links to move from symptoms to root cause.
 
 ## Notes
 
 - `Tempo` is intentionally pinned to `grafana/tempo:2.6.0` in [`docker-compose.yml`](/G:/codex-projects/university-hpc/docker-compose.yml) to keep the local monolithic trace backend stable for this demo.
 - Loki logs include `trace_id`, and the provisioned Grafana Loki data source links matching log lines directly into Tempo traces.
+- The hardware dashboards show the Docker runtime environment used by Docker Desktop on the laptop, not the native host operating system outside Docker.
+- `k6` exports its run metrics into the same Prometheus instance, so Grafana can correlate VUs, request rate, and latency with host and container utilization during each scenario.

@@ -54,6 +54,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--web.enable-lifecycle"
+      - "--web.enable-remote-write-receiver"
     ports:
       - "9090:9090"
     volumes:
@@ -62,6 +63,8 @@ services:
     depends_on:
       - api
       - dependency
+      - cadvisor
+      - node-exporter
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -111,6 +114,33 @@ services:
       - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
       - tempo-data:/var/tempo
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: university-hpc-cadvisor
+    privileged: true
+    command:
+      - "--docker_only=true"
+      - "--housekeeping_interval=5s"
+      - "--max_housekeeping_interval=10s"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: university-hpc-node-exporter
+    command:
+      - "--path.rootfs=/host"
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(dev|host|proc|run/credentials/.+|sys|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)"
+      - "--collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|nsfs|overlay|proc|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tmpfs|tracefs)$"
+    volumes:
+      - /:/host:ro
+
   k6:
     image: grafana/k6:latest
     container_name: university-hpc-k6
@@ -118,10 +148,15 @@ services:
       - loadtest
     environment:
       BASE_URL: "http://api:8080"
+      K6_OUT: "experimental-prometheus-rw"
+      K6_PROMETHEUS_RW_SERVER_URL: "http://prometheus:9090/api/v1/write"
+      K6_PROMETHEUS_RW_PUSH_INTERVAL: "5s"
+      K6_PROMETHEUS_RW_TREND_STATS: "p(95),p(99),avg,min,max"
     volumes:
       - ./k6:/scripts:ro
     depends_on:
       - api
+      - prometheus
     entrypoint: ["k6"]
     command: ["run", "/scripts/smoke.js"]
 
