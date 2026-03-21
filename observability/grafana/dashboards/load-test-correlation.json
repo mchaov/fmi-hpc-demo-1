@@ -85,7 +85,7 @@
       },
       "targets": [
         {
-          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"})",
+          "expr": "max(max_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"}[$__range]))",
           "legendFormat": "vus",
           "refId": "A"
         }
@@ -682,7 +682,7 @@
           "refId": "A"
         },
         {
-          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"})",
+          "expr": "max(max_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"}[$__interval]))",
           "legendFormat": "vus",
           "refId": "B"
         }
@@ -875,7 +875,7 @@
           "refId": "A"
         },
         {
-          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"})",
+          "expr": "max(max_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"}[$__interval]))",
           "legendFormat": "vus",
           "refId": "B"
         }
