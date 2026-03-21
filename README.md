@@ -7,7 +7,12 @@ Docker-based local teaching lab for:
 - repeatable load testing
 - cross-service root-cause analysis
 
-Detailed repository documentation, configuration, and tool interconnections live in [`manual.md`](./manual.md). This `README.md` is the quick setup guide.
+Detailed repository documentation lives in:
+
+- [`repository-guide.md`](./repository-guide.md) for repository structure, configuration, and teaching design
+- [`usage-guide.md`](./usage-guide.md) for the detailed how-to-use workflow
+
+This `README.md` is the quick setup guide.
 
 ## Prerequisites
 
@@ -128,12 +133,7 @@ docker compose down -v
 
 ## Documentation
 
-Use [`manual.md`](./manual.md) as the source of truth for:
+Use:
 
-- repository structure
-- service responsibilities
-- observability configuration
-- container build design
-- dashboard provisioning
-- how metrics, logs, traces, and load tests are interconnected
-- scenario behavior and teaching flow
+- [`repository-guide.md`](./repository-guide.md) as the source of truth for repository structure, configuration, service responsibilities, observability design, and dashboard provisioning
+- [`usage-guide.md`](./usage-guide.md) as the source of truth for running the stack, using the scenarios, and following the teaching flow

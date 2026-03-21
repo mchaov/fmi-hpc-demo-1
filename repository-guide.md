@@ -1,6 +1,6 @@
-# Repository Manual
+# Repository Guide
 
-`manual.md` is the source of truth for the detailed configuration of this repository, how the stack is assembled, and how the different tools and services are interconnected.
+`repository-guide.md` is the source of truth for what is in this repository, how the stack is assembled, and how the different tools and services are configured for learning purposes.
 
 ## Purpose
 
@@ -27,7 +27,8 @@ At a high level, the repository contains four things:
 ### Root files
 
 - [`README.md`](./README.md): short project overview and quick-start commands
-- [`manual.md`](./manual.md): this detailed manual
+- [`repository-guide.md`](./repository-guide.md): repository structure, configuration, and teaching design
+- [`usage-guide.md`](./usage-guide.md): detailed how-to-use guide for running the lab
 - [`docker-compose.yml`](./docker-compose.yml): main orchestration file for the entire lab
 
 ### Application services
@@ -399,7 +400,7 @@ Every scenario tags requests with:
 
 That taxonomy is a major part of the teaching design. It lets Grafana filter by lecture semantics instead of only by script name.
 
-## Scenario inventory
+## Scenario Inventory
 
 The repository includes these scenarios:
 
@@ -495,116 +496,6 @@ Grafana provisions a folder named `HPC Demo` and loads these dashboards:
 - `Endpoint Comparison`: compares route and `/api/report` mode behavior side by side
 - `Dependency Health`: focuses on outbound dependency effects, dependency share, and API/dependency overlays
 - `Root Cause Drilldown`: supports symptom-to-trace investigation
-
-## How To Start And Use The Lab
-
-## Prerequisites
-
-- Docker Desktop or a compatible Docker Engine + Compose setup
-
-## Start everything
-
-```bash
-docker compose up --build -d
-```
-
-This builds local images and starts the main lab stack.
-
-## Check the stack
-
-Useful checks:
-
-```bash
-docker compose ps
-curl http://localhost:8080/health
-curl http://localhost:8080/metrics
-curl http://localhost:9090/-/healthy
-curl http://localhost:3000/api/health
-```
-
-## Open the UIs
-
-- API health: `http://localhost:8080/health`
-- API metrics: `http://localhost:8080/metrics`
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000`
-
-Grafana dashboards are under the `HPC Demo` folder.
-
-## Run the smoke test
-
-```bash
-docker compose --profile loadtest run --rm k6
-```
-
-This validates:
-
-- API reachability
-- fast-path request handling
-- Prometheus remote-write from `k6`
-- the basic summary and threshold flow
-
-## Run the teaching scenarios
-
-```bash
-docker compose --profile loadtest run --rm k6 run /scripts/baseline.js
-docker compose --profile loadtest run --rm k6 run /scripts/degraded.js
-docker compose --profile loadtest run --rm k6 run /scripts/isolation.js
-docker compose --profile loadtest run --rm k6 run /scripts/spike.js
-docker compose --profile loadtest run --rm k6 run /scripts/stress.js
-docker compose --profile loadtest run --rm k6 run /scripts/stress-500.js
-docker compose --profile loadtest run --rm k6 run /scripts/soak.js
-docker compose --profile loadtest run --rm k6 run /scripts/breakpoint.js
-```
-
-### Common scenario overrides
-
-Isolation target:
-
-```bash
-docker compose --profile loadtest run --rm -e TARGET_OPERATION=dependency k6 run /scripts/isolation.js
-```
-
-Longer soak:
-
-```bash
-docker compose --profile loadtest run --rm -e SOAK_DURATION=30m k6 run /scripts/soak.js
-```
-
-Custom breakpoint ramp:
-
-```bash
-docker compose --profile loadtest run --rm -e BREAKPOINT_STEP_DURATION=60s -e BREAKPOINT_MAX_VUS=200 k6 run /scripts/breakpoint.js
-```
-
-## Suggested usage flow during a lesson
-
-1. Start the stack and verify health.
-2. Run `smoke.js` as a quick preflight.
-3. Run `baseline.js`.
-4. Open `System Overview`, `Infrastructure Overview`, and `Load Test Correlation`.
-5. In `Load Test Correlation`, start at the `Workload Mix` row and compare intended share, actual share, and drift.
-6. Use `Run Comparison` when you want to compare repeated runs such as `baseline A` versus `baseline B`.
-7. Use `Endpoint Comparison` to compare route shape with `/api/report` mode shape.
-8. Use `Dependency Health` to decide whether the system is dependency-heavy or dependency-impaired.
-9. Run a contrasting scenario such as `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
-10. Run `degraded.js`.
-11. Repeat the route/mode and dependency comparison on the degraded run.
-12. Use Loki and Tempo from Grafana to move from symptoms to individual requests and traces, filtering by `test_run_id` when you need to isolate one run.
-
-## How To Stop And Reset
-
-Stop the stack:
-
-```bash
-docker compose down
-```
-
-Stop and delete persisted observability data:
-
-```bash
-docker compose down -v
-```
 
 ## Development Notes
 
