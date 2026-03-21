@@ -1,28 +1,47 @@
-import { runRequest, weightedReportMode } from './common.js';
+import {
+  STRESS_MIX,
+  createSummaryHandler,
+  describeMix,
+  getCommonTestTags,
+  runReportMode,
+  runSearch,
+  weightedReportMode
+} from './common.js';
+
+const metadata = {
+  scenario: 'stress',
+  testType: 'stress',
+  variant: 'nominal',
+  runProfile: 'student',
+  workloadProfile: 'capacity-ramp',
+  workloadMix: describeMix(STRESS_MIX),
+  evaluationMode: 'observational',
+  thresholdSummary: [
+    'No hard fail thresholds. Observe saturation, latency growth, and errors.'
+  ],
+  notes: 'Student-safe stress ramp for capacity observation.'
+};
 
 export const options = {
   stages: [
     { duration: '2m', target: 20 },
     { duration: '2m', target: 40 },
     { duration: '2m', target: 80 },
-    { duration: '2m', target: 120 }
-  ]
+    { duration: '2m', target: 120 },
+    { duration: '30s', target: 0 }
+  ],
+  tags: getCommonTestTags(metadata)
 };
 
-const mix = [
-  ['fast', 0.55],
-  ['search', 0.15],
-  ['dependency', 0.2],
-  ['slow', 0.1]
-];
+export const handleSummary = createSummaryHandler(metadata);
 
 export default function () {
-  const mode = weightedReportMode(mix);
+  const mode = weightedReportMode(STRESS_MIX);
 
   if (mode === 'search') {
-    runRequest('/api/search?q=throughput', { scenario: 'stress', operation: 'search' });
+    runSearch('throughput', metadata);
     return;
   }
 
-  runRequest(`/api/report?mode=${mode}`, { scenario: 'stress', operation: mode });
+  runReportMode(mode, metadata);
 }

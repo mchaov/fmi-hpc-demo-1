@@ -804,7 +804,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(k6_http_reqs_total, scenario)",
+        "definition": "label_values(k6_http_reqs_total{scenario!=\"default\"}, scenario)",
         "includeAll": true,
         "label": "Scenario",
         "multi": true,
@@ -812,8 +812,83 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(k6_http_reqs_total, scenario)",
+          "query": "label_values(k6_http_reqs_total{scenario!=\"default\"}, scenario)",
           "refId": "PrometheusVariableQueryEditor-Scenario"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\"}, test_type)",
+        "includeAll": true,
+        "label": "Test Type",
+        "multi": true,
+        "name": "test_type",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\"}, test_type)",
+          "refId": "PrometheusVariableQueryEditor-TestType"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, variant)",
+        "includeAll": true,
+        "label": "Variant",
+        "multi": true,
+        "name": "variant",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, variant)",
+          "refId": "PrometheusVariableQueryEditor-Variant"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, run_profile)",
+        "includeAll": true,
+        "label": "Run Profile",
+        "multi": true,
+        "name": "run_profile",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, run_profile)",
+          "refId": "PrometheusVariableQueryEditor-RunProfile"
         },
         "refresh": 2,
         "sort": 1,

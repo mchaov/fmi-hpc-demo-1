@@ -1,28 +1,48 @@
-import { runRequest, weightedReportMode } from './common.js';
+import {
+  BASELINE_MIX,
+  createSummaryHandler,
+  describeMix,
+  getCommonTestTags,
+  runReportMode,
+  runSearch,
+  weightedReportMode
+} from './common.js';
+
+const metadata = {
+  scenario: 'baseline',
+  testType: 'load',
+  variant: 'nominal',
+  runProfile: 'student',
+  workloadProfile: 'representative',
+  workloadMix: describeMix(BASELINE_MIX),
+  evaluationMode: 'threshold',
+  thresholdSummary: [
+    'http_req_failed rate < 0.01',
+    'http_req_duration p(95) < 500ms',
+    'http_req_duration p(99) < 1200ms'
+  ],
+  notes: 'Representative nominal load for baseline comparison.'
+};
 
 export const options = {
   vus: 20,
   duration: '2m',
+  tags: getCommonTestTags(metadata),
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<500', 'p(99)<1200']
   }
 };
 
-const mix = [
-  ['fast', 0.6],
-  ['search', 0.2],
-  ['dependency', 0.15],
-  ['slow', 0.05]
-];
+export const handleSummary = createSummaryHandler(metadata);
 
 export default function () {
-  const mode = weightedReportMode(mix);
+  const mode = weightedReportMode(BASELINE_MIX);
 
   if (mode === 'search') {
-    runRequest('/api/search?q=performance', { scenario: 'baseline', operation: 'search' });
+    runSearch('performance', metadata);
     return;
   }
 
-  runRequest(`/api/report?mode=${mode}`, { scenario: 'baseline', operation: mode });
+  runReportMode(mode, metadata);
 }

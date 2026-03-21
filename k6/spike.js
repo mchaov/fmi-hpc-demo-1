@@ -1,31 +1,79 @@
-import { runRequest, weightedReportMode } from './common.js';
+import {
+  BASELINE_MIX,
+  createSummaryHandler,
+  describeMix,
+  getCommonTestTags,
+  runReportMode,
+  runSearch,
+  weightedReportMode
+} from './common.js';
+
+const metadata = {
+  scenario: 'spike',
+  testType: 'spike',
+  variant: 'nominal',
+  runProfile: 'student',
+  workloadProfile: 'burst',
+  workloadMix: describeMix(BASELINE_MIX),
+  evaluationMode: 'threshold',
+  thresholdSummary: [
+    'http_req_failed rate < 0.03',
+    'http_req_duration p(99) < 2500ms'
+  ],
+  notes: 'Ten short bursts to visualize repeated latency and throughput spikes.'
+};
 
 export const options = {
   stages: [
-    { duration: '30s', target: 80 },
-    { duration: '60s', target: 80 },
-    { duration: '30s', target: 0 }
+    { duration: '10s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '5s', target: 80 },
+    { duration: '10s', target: 80 },
+    { duration: '15s', target: 10 },
+    { duration: '10s', target: 0 }
   ],
+  tags: getCommonTestTags(metadata),
   thresholds: {
     http_req_failed: ['rate<0.03'],
     http_req_duration: ['p(99)<2500']
   }
 };
 
-const mix = [
-  ['fast', 0.6],
-  ['search', 0.2],
-  ['dependency', 0.15],
-  ['slow', 0.05]
-];
+export const handleSummary = createSummaryHandler(metadata);
 
 export default function () {
-  const mode = weightedReportMode(mix);
+  const mode = weightedReportMode(BASELINE_MIX);
 
   if (mode === 'search') {
-    runRequest('/api/search?q=latency', { scenario: 'spike', operation: 'search' });
+    runSearch('latency', metadata);
     return;
   }
 
-  runRequest(`/api/report?mode=${mode}`, { scenario: 'spike', operation: mode });
+  runReportMode(mode, metadata);
 }

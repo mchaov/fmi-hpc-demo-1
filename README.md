@@ -60,14 +60,50 @@ Run smoke test:
 docker compose --profile loadtest run --rm k6
 ```
 
-Run the other bundled scenarios:
+Run the lecture-aligned scenarios:
 
 ```powershell
+docker compose --profile loadtest run --rm k6 run /scripts/isolation.js
 docker compose --profile loadtest run --rm k6 run /scripts/baseline.js
 docker compose --profile loadtest run --rm k6 run /scripts/spike.js
 docker compose --profile loadtest run --rm k6 run /scripts/stress.js
+docker compose --profile loadtest run --rm k6 run /scripts/stress-500.js
+docker compose --profile loadtest run --rm k6 run /scripts/soak.js
+docker compose --profile loadtest run --rm k6 run /scripts/breakpoint.js
 docker compose --profile loadtest run --rm k6 run /scripts/degraded.js
 ```
+
+Run isolation against a specific operation:
+
+```powershell
+docker compose --profile loadtest run --rm -e TARGET_OPERATION=dependency k6 run /scripts/isolation.js
+```
+
+Optional overrides for the lecture scenarios:
+
+```powershell
+docker compose --profile loadtest run --rm -e SOAK_DURATION=30m k6 run /scripts/soak.js
+docker compose --profile loadtest run --rm -e BREAKPOINT_STEP_DURATION=60s -e BREAKPOINT_MAX_VUS=200 k6 run /scripts/breakpoint.js
+```
+
+`stress-500.js` is the advanced profile and is intended for stronger laptops or instructor-led demonstrations, not as the default classroom run.
+
+## Lecture Mapping
+
+| Lecture Type | Script | Scope / Intent | Watch First | Result |
+| --- | --- | --- | --- | --- |
+| `isolation` | `isolation.js` | Single-path test for one operation (`fast`, `search`, or `dependency`) | endpoint latency | pass/fail |
+| `load` | `baseline.js` | Nominal representative mix for the baseline | p95 latency, error rate | pass/fail |
+| `load` degraded variant | `degraded.js` | Same teaching flow as load, but with injected dependency slowdown | p95 latency, dependency errors | pass/fail |
+| `spike` | `spike.js` | Ten sharp bursts to show repeated tail-latency spikes | request-rate and VU peaks | pass/fail |
+| `stress` | `stress.js` | Student-safe stepped ramp to observe degradation | latency growth vs CPU | observational |
+| `stress` extended profile | `stress-500.js` | Advanced stepped ramp up to `500` VUs | saturation point and error growth | observational |
+| `soak` | `soak.js` | Sustained nominal traffic to inspect drift over time | memory and latency drift | pass/fail |
+| `breakpoint` | `breakpoint.js` | Capacity ramp that stops at the first sustained SLO breach | breaking stage and last passing stage | pass/fail with abort |
+
+All request metrics are tagged with `scenario`, `test_type`, `variant`, `run_profile`, `workload_profile`, and `operation` so Grafana can filter by lecture taxonomy instead of only by script name.
+
+`configuration` testing and `internet` testing from the lecture are not implemented in this phase.
 
 ## Demo Endpoints
 
@@ -90,9 +126,10 @@ Report mode behavior:
 1. Start the stack.
 2. Run `baseline.js`.
 3. Inspect `System Overview`, `Infrastructure Overview`, and `Load Test Correlation` together to compare request rate, latency, active VUs, CPU, memory, disk, and network usage.
-4. Run `degraded.js`.
-5. Compare `Endpoint Comparison` and `Dependency Health` against the hardware dashboards to see whether the bottleneck is resource saturation or an application-level dependency slowdown.
-6. Use Grafana logs and trace links to move from symptoms to root cause.
+4. Run one lecture test type that contrasts with baseline: `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
+5. Run `degraded.js` to compare nominal vs degraded `load`.
+6. Compare `Endpoint Comparison` and `Dependency Health` against the hardware dashboards to see whether the bottleneck is resource saturation or an application-level dependency slowdown.
+7. Use Grafana logs and trace links to move from symptoms to root cause.
 
 ## Notes
 

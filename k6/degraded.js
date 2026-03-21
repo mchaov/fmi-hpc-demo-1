@@ -1,28 +1,47 @@
-import { runRequest, weightedReportMode } from './common.js';
+import {
+  DEGRADED_MIX,
+  createSummaryHandler,
+  describeMix,
+  getCommonTestTags,
+  runReportMode,
+  runSearch,
+  weightedReportMode
+} from './common.js';
+
+const metadata = {
+  scenario: 'degraded',
+  testType: 'load',
+  variant: 'degraded',
+  runProfile: 'student',
+  workloadProfile: 'representative',
+  workloadMix: describeMix(DEGRADED_MIX),
+  evaluationMode: 'threshold',
+  thresholdSummary: [
+    'http_req_failed rate < 0.08',
+    'http_req_duration p(95) < 1200ms'
+  ],
+  notes: 'Degraded comparison against nominal load with dependency slowdown injected.'
+};
 
 export const options = {
   vus: 20,
   duration: '2m',
+  tags: getCommonTestTags(metadata),
   thresholds: {
     http_req_failed: ['rate<0.08'],
     http_req_duration: ['p(95)<1200']
   }
 };
 
-const mix = [
-  ['fast', 0.45],
-  ['search', 0.2],
-  ['dependency', 0.05],
-  ['degraded', 0.3]
-];
+export const handleSummary = createSummaryHandler(metadata);
 
 export default function () {
-  const mode = weightedReportMode(mix);
+  const mode = weightedReportMode(DEGRADED_MIX);
 
   if (mode === 'search') {
-    runRequest('/api/search?q=degraded', { scenario: 'degraded', operation: 'search' });
+    runSearch('degraded', metadata);
     return;
   }
 
-  runRequest(`/api/report?mode=${mode}`, { scenario: 'degraded', operation: mode });
+  runReportMode(mode, metadata);
 }
