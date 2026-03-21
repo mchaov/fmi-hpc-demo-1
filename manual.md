@@ -20,7 +20,7 @@ At a high level, the repository contains four things:
 1. a demo application stack
 2. an observability stack
 3. load-test scenarios
-4. supporting repository documentation and planning material
+4. supporting repository documentation
 
 ## Repository Layout
 
@@ -29,8 +29,6 @@ At a high level, the repository contains four things:
 - [`README.md`](./README.md): short project overview and quick-start commands
 - [`manual.md`](./manual.md): this detailed manual
 - [`docker-compose.yml`](./docker-compose.yml): main orchestration file for the entire lab
-- `course-evaluation-and-demo-plan.md`: local planning document name reserved in `.gitignore`, not part of the tracked repository
-- [`development-plan.md`](./development-plan.md): dashboard and observability roadmap when present in the working tree
 
 ### Application services
 
@@ -48,10 +46,6 @@ At a high level, the repository contains four things:
 - [`observability/loki`](./observability/loki): Loki configuration and image build
 - [`observability/promtail`](./observability/promtail): Promtail configuration and image build
 - [`observability/tempo`](./observability/tempo): Tempo configuration and image build
-
-### Local-only material
-
-- `course-content/`: a local course-material directory name reserved in `.gitignore`; it is not part of the tracked repository
 
 ## What The Stack Looks Like
 
@@ -497,10 +491,6 @@ Grafana provisions a folder named `HPC Demo` and loads these dashboards:
 - `Dependency Health`: focuses on outbound dependency effects
 - `Root Cause Drilldown`: supports symptom-to-trace investigation
 
-### Current dashboard roadmap status
-
-[`development-plan.md`](./development-plan.md) captures ongoing dashboard work when that file exists in the working tree. The repository already includes the phase-2 workload mix row in `Load Test Correlation`, while later documentation and some later dashboard phases remain incomplete.
-
 ## How To Start And Use The Lab
 
 ## Prerequisites
@@ -636,18 +626,11 @@ Dashboard JSON files live under:
 
 At image build time they are copied into `/etc/grafana/...`, not into the persistent Grafana data volume, so a named volume on `/var/lib/grafana` does not hide them.
 
-## Supporting documents
-
-- `course-evaluation-and-demo-plan.md`: local planning document name reserved in `.gitignore`, not part of the tracked repository
-- [`development-plan.md`](./development-plan.md): describes dashboard improvements that are still in progress when the file is present locally
-- `course-content/`: local course material directory name reserved in `.gitignore`, not part of the tracked repository
-
 ## Known Limits And Current Gaps
 
 - Tempo is available to Grafana inside the compose network, but not exposed on a host port.
 - `test_run_id` is not implemented yet, so repeated runs are still mainly separated by time range and scenario tags.
 - Intended-vs-actual workload mix visualization is not complete yet.
-- The course content is performance/observability oriented, not a full classical HPC curriculum.
 - The repository does not currently include a formal unit/integration test suite for the Node services; validation is primarily done through compose health checks and `k6` scenarios.
 
 ## Quick Summary
