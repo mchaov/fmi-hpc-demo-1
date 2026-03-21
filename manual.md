@@ -340,6 +340,7 @@ These labels are what power the dashboard slicing by route, mode, and dependency
 The API logs:
 
 - `request_id`
+- `test_run_id`
 - `method`
 - `route`
 - `status_code`
@@ -349,7 +350,7 @@ The API logs:
 - `trace_id`
 - `span_id`
 
-Because those logs go to stdout as JSON, Promtail can ingest them without a separate file shipper sidecar.
+Because those logs go to stdout as JSON, Promtail can ingest them without a separate file shipper sidecar. `test_run_id` is promoted as a Loki label so one classroom run can be isolated without relying only on the dashboard time range.
 
 ## Dependency Behavior
 
@@ -371,7 +372,7 @@ Both Node services use:
 - OTLP over HTTP
 - an always-on sampler
 
-The API creates server spans for incoming requests and client spans for dependency calls. The dependency creates server spans for its own incoming work requests. Because the API propagates context, the resulting trace graph shows the application hop cleanly.
+The API creates server spans for incoming requests and client spans for dependency calls. The dependency creates server spans for its own incoming work requests. Because the API propagates context, the resulting trace graph shows the application hop cleanly. When `x-test-run-id` is present, both services also attach it to spans as `test.run_id`.
 
 ## Load Testing Design
 
@@ -382,6 +383,7 @@ The API creates server spans for incoming requests and client spans for dependen
 - request execution helpers
 - metadata tag generation
 - workload mix constants
+- workload target-share export
 - small environment parsers
 - a common summary formatter
 
@@ -391,6 +393,7 @@ Every scenario tags requests with:
 - `test_type`
 - `variant`
 - `run_profile`
+- `test_run_id`
 - `workload_profile`
 - `operation`
 
@@ -486,9 +489,9 @@ Grafana provisions a folder named `HPC Demo` and loads these dashboards:
 
 - `System Overview`: application-centered runtime summary
 - `Infrastructure Overview`: host and container resource context
-- `Load Test Correlation`: puts load, latency, and infrastructure signals on the same page
-- `Endpoint Comparison`: compares route and mode behavior
-- `Dependency Health`: focuses on outbound dependency effects
+- `Load Test Correlation`: puts load, latency, infrastructure, workload share, and target-vs-actual mix drift on the same page
+- `Endpoint Comparison`: compares route and `/api/report` mode behavior side by side
+- `Dependency Health`: focuses on outbound dependency effects, dependency share, and API/dependency overlays
 - `Root Cause Drilldown`: supports symptom-to-trace investigation
 
 ## How To Start And Use The Lab
@@ -578,10 +581,13 @@ docker compose --profile loadtest run --rm -e BREAKPOINT_STEP_DURATION=60s -e BR
 2. Run `smoke.js` as a quick preflight.
 3. Run `baseline.js`.
 4. Open `System Overview`, `Infrastructure Overview`, and `Load Test Correlation`.
-5. Run a contrasting scenario such as `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
-6. Run `degraded.js`.
-7. Compare `Endpoint Comparison` and `Dependency Health`.
-8. Use Loki and Tempo from Grafana to move from symptoms to individual requests and traces.
+5. In `Load Test Correlation`, start at the `Workload Mix` row and compare intended share, actual share, and drift.
+6. Use `Endpoint Comparison` to compare route shape with `/api/report` mode shape.
+7. Use `Dependency Health` to decide whether the system is dependency-heavy or dependency-impaired.
+8. Run a contrasting scenario such as `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
+9. Run `degraded.js`.
+10. Repeat the route/mode and dependency comparison on the degraded run.
+11. Use Loki and Tempo from Grafana to move from symptoms to individual requests and traces, filtering by `test_run_id` when you need to isolate one run.
 
 ## How To Stop And Reset
 
@@ -629,8 +635,6 @@ At image build time they are copied into `/etc/grafana/...`, not into the persis
 ## Known Limits And Current Gaps
 
 - Tempo is available to Grafana inside the compose network, but not exposed on a host port.
-- `test_run_id` is not implemented yet, so repeated runs are still mainly separated by time range and scenario tags.
-- Intended-vs-actual workload mix visualization is not complete yet.
 - The repository does not currently include a formal unit/integration test suite for the Node services; validation is primarily done through compose health checks and `k6` scenarios.
 
 ## Quick Summary

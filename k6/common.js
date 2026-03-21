@@ -1,8 +1,10 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { Gauge } from 'k6/metrics';
 
 export const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 const DEFAULT_THINK_TIME_SECONDS = Number.parseFloat(__ENV.K6_THINK_TIME || '0.1');
+const workloadTargetShare = new Gauge('workload_target_share');
 
 export const BASELINE_MIX = [
   ['fast', 0.6],
@@ -31,6 +33,33 @@ const DURATION_TO_MS = {
   m: 60_000,
   h: 3_600_000
 };
+
+function sanitizeRunIdSegment(value) {
+  return `${value || 'na'}`
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    || 'na';
+}
+
+function createDefaultTestRunId(metadata) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return [
+    sanitizeRunIdSegment(metadata.scenario),
+    sanitizeRunIdSegment(metadata.variant || 'nominal'),
+    sanitizeRunIdSegment(metadata.workloadProfile || 'representative'),
+    timestamp
+  ].join('-');
+}
+
+export function getTestRunId(metadata) {
+  if (!metadata.testRunId) {
+    metadata.testRunId = __ENV.TEST_RUN_ID || createDefaultTestRunId(metadata);
+  }
+
+  return metadata.testRunId;
+}
 
 export function weightedReportMode(weightMap) {
   const value = Math.random();
@@ -83,7 +112,8 @@ export function getCommonTestTags(metadata) {
     test_type: metadata.testType,
     variant: metadata.variant || 'nominal',
     run_profile: metadata.runProfile || 'student',
-    workload_profile: metadata.workloadProfile || 'representative'
+    workload_profile: metadata.workloadProfile || 'representative',
+    test_run_id: getTestRunId(metadata)
   };
 }
 
@@ -108,10 +138,36 @@ export function getScenarioTags(metadata, operation, overrides = {}) {
   };
 }
 
-export function runRequest(path, metadata, operation, overrides = {}) {
-  const response = http.get(`${BASE_URL}${path}`, {
+function emitWorkloadTargetShare(metadata) {
+  if (!Array.isArray(metadata.workloadMixMap) || metadata.workloadMixMap.length === 0) {
+    return;
+  }
+
+  const commonTags = getCommonTestTags(metadata);
+  for (const [operation, share] of metadata.workloadMixMap) {
+    workloadTargetShare.add(share, {
+      ...commonTags,
+      operation
+    });
+  }
+}
+
+export function getScenarioRequestOptions(metadata, operation, overrides = {}) {
+  return {
+    headers: {
+      'x-test-run-id': getTestRunId(metadata),
+      ...(overrides.headers || {})
+    },
     tags: getScenarioTags(metadata, operation, overrides.tags || {})
-  });
+  };
+}
+
+export function runRequest(path, metadata, operation, overrides = {}) {
+  emitWorkloadTargetShare(metadata);
+  const response = http.get(
+    `${BASE_URL}${path}`,
+    getScenarioRequestOptions(metadata, operation, overrides)
+  );
 
   check(response, {
     'status is below 500': (res) => res.status < 500
@@ -226,6 +282,7 @@ export function createSummaryHandler(metadata) {
       `Variant: ${metadata.variant || 'nominal'}`,
       `Run profile: ${metadata.runProfile || 'student'}`,
       `Workload profile: ${metadata.workloadProfile || 'representative'}`,
+      `Test run id: ${getTestRunId(metadata)}`,
       `Workload mix: ${metadata.workloadMix || 'n/a'}`,
       `Evaluation: ${metadata.evaluationMode === 'observational' ? 'observational' : 'threshold-based'}`,
       `Result: ${

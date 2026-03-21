@@ -66,6 +66,12 @@ Run the representative baseline:
 docker compose --profile loadtest run --rm k6 run /scripts/baseline.js
 ```
 
+Run the same scenario with an explicit run identifier:
+
+```bash
+docker compose --profile loadtest run --rm -e TEST_RUN_ID=baseline-demo-01 k6 run /scripts/baseline.js
+```
+
 Run the degraded comparison:
 
 ```bash
@@ -94,11 +100,16 @@ After running `baseline.js`, open:
 - `Infrastructure Overview`
 - `Load Test Correlation`
 
+In `Load Test Correlation`, start with the `Workload Mix` row:
+
+- compare `k6 Request Share By Operation` with `API Request Share By Route` and `API Request Share By Mode`
+- use `Target vs Actual Share By Operation` and `Workload Mix Drift By Operation` to spot execution drift quickly
+
 Then use:
 
-- `Endpoint Comparison` for route and mode comparisons
-- `Dependency Health` for downstream behavior
-- Grafana logs and traces for drilldown
+- `Endpoint Comparison` for side-by-side route and `/api/report` mode behavior
+- `Dependency Health` for dependency share, latency, error overlays, and outcome split
+- Grafana logs and traces for drilldown, filtering by `test_run_id` when you need to isolate one run
 
 ## Stop And Reset
 

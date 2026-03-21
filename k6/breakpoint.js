@@ -36,6 +36,7 @@ const metadata = {
   variant: 'nominal',
   runProfile: 'student',
   workloadProfile: 'capacity-ramp',
+  workloadMixMap: BASELINE_MIX,
   workloadMix: describeMix(BASELINE_MIX),
   evaluationMode: 'threshold',
   thresholdSummary: [

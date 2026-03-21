@@ -74,6 +74,11 @@ function getModeLabel(request) {
   return 'unknown';
 }
 
+function getTestRunId(request) {
+  const headerValue = request.headers['x-test-run-id'];
+  return typeof headerValue === 'string' && headerValue.trim() ? headerValue.trim() : null;
+}
+
 function requestJson(urlString, timeoutMs = 3000, headers = {}) {
   const url = new URL(urlString);
   const transport = url.protocol === 'https:' ? https : http;
@@ -130,6 +135,7 @@ function requestJson(urlString, timeoutMs = 3000, headers = {}) {
 async function withServerSpan({ request, tracer, spanName, handler }) {
   const route = request.metricsRoute || getRouteLabel(request);
   const parentContext = propagation.extract(context.active(), request.headers);
+  const testRunId = request.testRunId || getTestRunId(request);
 
   return tracer.startActiveSpan(
     spanName,
@@ -138,7 +144,8 @@ async function withServerSpan({ request, tracer, spanName, handler }) {
       attributes: {
         'http.method': request.method,
         'http.route': route,
-        'http.request_id': request.id
+        'http.request_id': request.id,
+        ...(testRunId ? { 'test.run_id': testRunId } : {})
       }
     },
     parentContext,
@@ -189,7 +196,11 @@ function createApp() {
 
   app.addHook('onRequest', async (request, reply) => {
     request.startTime = process.hrtime.bigint();
+    request.testRunId = getTestRunId(request);
     reply.header('x-request-id', request.id);
+    if (request.testRunId) {
+      reply.header('x-test-run-id', request.testRunId);
+    }
   });
 
   app.addHook('preHandler', async (request) => {
@@ -243,6 +254,7 @@ function createApp() {
       status_code: reply.statusCode,
       duration_ms: durationMs,
       mode,
+      test_run_id: request.testRunId || undefined,
       error: request.responseError ? request.responseError.message : null,
       trace_id: traceContext ? traceContext.traceId : undefined,
       span_id: traceContext ? traceContext.spanId : undefined
@@ -382,6 +394,7 @@ function createApp() {
             tracer,
             mode,
             requestId: request.id,
+            testRunId: request.testRunId,
             log: request.log
           });
 
@@ -415,7 +428,7 @@ function createApp() {
   return app;
 }
 
-async function callDependency({ metrics, tracer, mode, requestId, log }) {
+async function callDependency({ metrics, tracer, mode, requestId, testRunId, log }) {
   const delayMs = mode === 'dependency' ? 75 : 400;
   const failRate = mode === 'dependency' ? 0 : 0.05;
   const operation = mode;
@@ -431,6 +444,10 @@ async function callDependency({ metrics, tracer, mode, requestId, log }) {
     span.setAttribute('dependency.url', targetUrl);
     span.setAttribute('dependency.delay_ms', delayMs);
     span.setAttribute('dependency.fail_rate', failRate);
+    if (testRunId) {
+      span.setAttribute('test.run_id', testRunId);
+      headers['x-test-run-id'] = testRunId;
+    }
     propagation.inject(context.active(), headers);
 
     try {
@@ -461,6 +478,7 @@ async function callDependency({ metrics, tracer, mode, requestId, log }) {
       log.warn({
         request_id: requestId,
         mode,
+        test_run_id: testRunId || undefined,
         error: error.message
       }, 'dependency request failed');
 

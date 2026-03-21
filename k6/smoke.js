@@ -1,7 +1,12 @@
 import { check } from 'k6';
 import http from 'k6/http';
 
-import { BASE_URL, createSummaryHandler, getCommonTestTags, getScenarioTags } from './common.js';
+import {
+  BASE_URL,
+  createSummaryHandler,
+  getCommonTestTags,
+  getScenarioRequestOptions
+} from './common.js';
 
 const metadata = {
   scenario: 'smoke',
@@ -31,16 +36,18 @@ export const options = {
 export const handleSummary = createSummaryHandler(metadata);
 
 export default function () {
-  const health = http.get(`${BASE_URL}/health`, {
-    tags: getScenarioTags(metadata, 'health')
-  });
+  const health = http.get(
+    `${BASE_URL}/health`,
+    getScenarioRequestOptions(metadata, 'health')
+  );
   check(health, {
     'health returns 200': (res) => res.status === 200
   });
 
-  const fast = http.get(`${BASE_URL}/api/report?mode=fast`, {
-    tags: getScenarioTags(metadata, 'fast')
-  });
+  const fast = http.get(
+    `${BASE_URL}/api/report?mode=fast`,
+    getScenarioRequestOptions(metadata, 'fast')
+  );
   check(fast, {
     'fast path returns 200': (res) => res.status === 200
   });

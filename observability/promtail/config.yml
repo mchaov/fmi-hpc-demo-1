@@ -22,10 +22,12 @@ scrape_configs:
             route: route
             trace_id: trace_id
             request_id: request_id
+            test_run_id: test_run_id
       - labels:
           service:
           level:
           route:
+          test_run_id:
     relabel_configs:
       - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
         target_label: compose_service

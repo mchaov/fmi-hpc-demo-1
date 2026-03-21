@@ -14,6 +14,7 @@ const metadata = {
   variant: 'nominal',
   runProfile: 'student',
   workloadProfile: 'representative',
+  workloadMixMap: BASELINE_MIX,
   workloadMix: describeMix(BASELINE_MIX),
   evaluationMode: 'threshold',
   thresholdSummary: [

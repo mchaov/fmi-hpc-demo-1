@@ -14,6 +14,7 @@ const metadata = {
   variant: 'degraded',
   runProfile: 'student',
   workloadProfile: 'representative',
+  workloadMixMap: DEGRADED_MIX,
   workloadMix: describeMix(DEGRADED_MIX),
   evaluationMode: 'threshold',
   thresholdSummary: [

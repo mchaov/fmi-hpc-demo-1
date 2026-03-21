@@ -22,6 +22,7 @@ const metadata = {
   variant: 'nominal',
   runProfile: 'student',
   workloadProfile: 'single-path',
+  workloadMixMap: [[TARGET_OPERATION, 1]],
   workloadMix: `100% ${TARGET_OPERATION}`,
   evaluationMode: 'threshold',
   thresholdSummary: [

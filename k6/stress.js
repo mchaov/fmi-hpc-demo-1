@@ -14,6 +14,7 @@ const metadata = {
   variant: 'nominal',
   runProfile: 'student',
   workloadProfile: 'capacity-ramp',
+  workloadMixMap: STRESS_MIX,
   workloadMix: describeMix(STRESS_MIX),
   evaluationMode: 'observational',
   thresholdSummary: [

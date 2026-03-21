@@ -36,9 +36,15 @@ function getModeLabel(request) {
   return 'unknown';
 }
 
+function getTestRunId(request) {
+  const headerValue = request.headers['x-test-run-id'];
+  return typeof headerValue === 'string' && headerValue.trim() ? headerValue.trim() : null;
+}
+
 async function withServerSpan({ request, tracer, spanName, handler }) {
   const route = request.metricsRoute || getRouteLabel(request);
   const parentContext = propagation.extract(context.active(), request.headers);
+  const testRunId = request.testRunId || getTestRunId(request);
 
   return tracer.startActiveSpan(
     spanName,
@@ -47,7 +53,8 @@ async function withServerSpan({ request, tracer, spanName, handler }) {
       attributes: {
         'http.method': request.method,
         'http.route': route,
-        'http.request_id': request.id
+        'http.request_id': request.id,
+        ...(testRunId ? { 'test.run_id': testRunId } : {})
       }
     },
     parentContext,
@@ -98,7 +105,11 @@ function createApp() {
 
   app.addHook('onRequest', async (request, reply) => {
     request.startTime = process.hrtime.bigint();
+    request.testRunId = getTestRunId(request);
     reply.header('x-request-id', request.id);
+    if (request.testRunId) {
+      reply.header('x-test-run-id', request.testRunId);
+    }
   });
 
   app.addHook('preHandler', async (request) => {
@@ -152,6 +163,7 @@ function createApp() {
       status_code: reply.statusCode,
       duration_ms: durationMs,
       mode,
+      test_run_id: request.testRunId || undefined,
       error: request.responseError ? request.responseError.message : null,
       trace_id: traceContext ? traceContext.traceId : undefined,
       span_id: traceContext ? traceContext.spanId : undefined

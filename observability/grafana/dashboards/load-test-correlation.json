@@ -43,7 +43,7 @@
       },
       "id": 13,
       "options": {
-        "content": "**Scenario:** ${scenario:csv}  \n**Test Type:** ${test_type:csv}  \n**Variant:** ${variant:csv}  \n**Run Profile:** ${run_profile:csv}  \n**Workload Profile:** ${workload_profile:csv}  \n**Operation:** ${operation:csv}  \n**API Route:** ${route:csv}  \n**API Mode:** ${mode:csv}",
+        "content": "**Scenario:** ${scenario:csv}  \n**Test Type:** ${test_type:csv}  \n**Variant:** ${variant:csv}  \n**Run Profile:** ${run_profile:csv}  \n**Test Run ID:** ${test_run_id:csv}  \n**Workload Profile:** ${workload_profile:csv}  \n**Operation:** ${operation:csv}  \n**API Route:** ${route:csv}  \n**API Mode:** ${mode:csv}",
         "mode": "markdown"
       },
       "title": "Selected K6 Metadata",
@@ -85,7 +85,7 @@
       },
       "targets": [
         {
-          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"})",
+          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"})",
           "legendFormat": "vus",
           "refId": "A"
         }
@@ -130,7 +130,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
+          "expr": "sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
           "legendFormat": "test rps",
           "refId": "A"
         }
@@ -360,7 +360,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
+          "expr": "sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
           "legendFormat": "{{operation}}",
           "refId": "A"
         }
@@ -508,7 +508,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
+          "expr": "sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
           "legendFormat": "{{operation}}",
           "refId": "A"
         }
@@ -677,12 +677,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
+          "expr": "sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
           "legendFormat": "request rate",
           "refId": "A"
         },
         {
-          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"})",
+          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"})",
           "legendFormat": "vus",
           "refId": "B"
         }
@@ -875,7 +875,7 @@
           "refId": "A"
         },
         {
-          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"})",
+          "expr": "max(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"})",
           "legendFormat": "vus",
           "refId": "B"
         }
@@ -1015,12 +1015,113 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
+          "expr": "sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval]))",
           "legendFormat": "request rate",
           "refId": "B"
         }
       ],
       "title": "Network Throughput vs Request Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "showPoints": "never"
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])) / clamp_min(sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])), 0.0001)",
+          "legendFormat": "actual {{operation}}",
+          "refId": "A"
+        },
+        {
+          "expr": "max by (operation) (k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"})",
+          "legendFormat": "target {{operation}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Target vs Actual Share By Operation",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 1,
+            "showPoints": "never"
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 31,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "expr": "(sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])) / clamp_min(sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])), 0.0001)) - on(operation) max by (operation) (k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"})",
+          "legendFormat": "{{operation}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Workload Mix Drift By Operation",
       "type": "timeseries"
     },
     {
@@ -1133,7 +1234,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\"}, workload_profile)",
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\"}, workload_profile)",
         "includeAll": true,
         "label": "Workload Profile",
         "multi": true,
@@ -1141,7 +1242,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\"}, workload_profile)",
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\"}, workload_profile)",
           "refId": "PrometheusVariableQueryEditor-WorkloadProfile"
         },
         "refresh": 2,
@@ -1158,7 +1259,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"}, operation)",
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"}, operation)",
         "includeAll": true,
         "label": "Operation",
         "multi": true,
@@ -1166,7 +1267,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"}, operation)",
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\"}, operation)",
           "refId": "PrometheusVariableQueryEditor-Operation"
         },
         "refresh": 2,
@@ -1293,6 +1394,31 @@
           "qryType": 1,
           "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, run_profile)",
           "refId": "PrometheusVariableQueryEditor-RunProfile"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\"}, test_run_id)",
+        "includeAll": true,
+        "label": "Test Run ID",
+        "multi": true,
+        "name": "test_run_id",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\"}, test_run_id)",
+          "refId": "PrometheusVariableQueryEditor-TestRunId"
         },
         "refresh": 2,
         "sort": 1,
