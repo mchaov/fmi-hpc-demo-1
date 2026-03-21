@@ -48,7 +48,8 @@ services:
       start_period: 10s
 
   prometheus:
-    image: prom/prometheus:latest
+    build:
+      context: ./observability/prometheus
     container_name: university-hpc-prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -58,7 +59,6 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     depends_on:
       - api
@@ -67,7 +67,8 @@ services:
       - node-exporter
 
   grafana:
-    image: grafana/grafana-oss:latest
+    build:
+      context: ./observability/grafana
     container_name: university-hpc-grafana
     environment:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
@@ -78,40 +79,38 @@ services:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
       - loki
       - tempo
 
   loki:
-    image: grafana/loki:latest
+    build:
+      context: ./observability/loki
     container_name: university-hpc-loki
     command:
       - "-config.file=/etc/loki/config.yml"
     volumes:
-      - ./observability/loki/config.yml:/etc/loki/config.yml:ro
       - loki-data:/loki
 
   promtail:
-    image: grafana/promtail:latest
+    build:
+      context: ./observability/promtail
     container_name: university-hpc-promtail
     command:
       - "-config.file=/etc/promtail/config.yml"
     volumes:
-      - ./observability/promtail/config.yml:/etc/promtail/config.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - loki
 
   tempo:
-    image: grafana/tempo:2.6.0
+    build:
+      context: ./observability/tempo
     container_name: university-hpc-tempo
     command:
       - "-config.file=/etc/tempo/tempo.yml"
     volumes:
-      - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
       - tempo-data:/var/tempo
 
   cadvisor:
@@ -142,7 +141,8 @@ services:
       - /:/host:ro
 
   k6:
-    image: grafana/k6:latest
+    build:
+      context: ./k6
     container_name: university-hpc-k6
     profiles:
       - loadtest
@@ -152,8 +152,6 @@ services:
       K6_PROMETHEUS_RW_SERVER_URL: "http://prometheus:9090/api/v1/write"
       K6_PROMETHEUS_RW_PUSH_INTERVAL: "5s"
       K6_PROMETHEUS_RW_TREND_STATS: "p(95),p(99),avg,min,max"
-    volumes:
-      - ./k6:/scripts:ro
     depends_on:
       - api
       - prometheus

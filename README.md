@@ -1,139 +1,127 @@
 # University HPC Performance Demo
 
-Docker-based local demo platform for teaching performance engineering, observability, load testing, and cross-service root-cause analysis.
+Docker-based local teaching lab for:
 
-## Stack
+- performance engineering
+- observability with metrics, logs, and traces
+- repeatable load testing
+- cross-service root-cause analysis
 
-- `demo-api`: Fastify API with Prometheus metrics, JSON logs, and OpenTelemetry traces
-- `demo-dependency`: internal Fastify dependency with controllable latency and failures
-- `Prometheus`: metrics collection
-- `Grafana`: dashboards, logs, and traces UI
-- `Loki` + `Promtail`: centralized logs
-- `Tempo`: trace backend
-- `k6`: on-demand load tests
+Detailed repository documentation, configuration, and tool interconnections live in [`manual.md`](/media/sf_university-hpc/manual.md). This `README.md` is the quick setup guide.
 
-## Requirements
+## Prerequisites
 
-- Docker Desktop with Compose
+- Docker Desktop or Docker Engine with Compose support
+- Enough local resources to run several containers at once
+  - practical minimum: `8 GB` RAM
+  - more headroom is helpful for `stress-500.js`
+- Internet access for the first image build and pull
 
-## Start The Lab
+## Quick Setup
 
-```powershell
+Start the lab:
+
+```bash
 docker compose up --build -d
 ```
 
-## Stop The Lab
+Check that the core services are healthy:
 
-```powershell
-docker compose down
+```bash
+docker compose ps
+curl http://localhost:8080/health
+curl http://localhost:9090/-/healthy
+curl http://localhost:3000/api/health
 ```
 
-To remove stored observability data as well:
-
-```powershell
-docker compose down -v
-```
-
-## URLs
+Open the main interfaces:
 
 - API health: `http://localhost:8080/health`
 - API metrics: `http://localhost:8080/metrics`
-- Grafana: `http://localhost:3000`
 - Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
 
-Grafana runs with anonymous admin access enabled for classroom simplicity.
+Grafana is configured for anonymous access for classroom use.
 
-## Dashboards
+## Quick Validation
+
+Run the smoke scenario:
+
+```bash
+docker compose --profile loadtest run --rm k6
+```
+
+This validates:
+
+- API reachability
+- `k6` execution
+- Prometheus remote-write ingestion
+- the basic performance threshold path
+
+## Common Usage
+
+Run the representative baseline:
+
+```bash
+docker compose --profile loadtest run --rm k6 run /scripts/baseline.js
+```
+
+Run the degraded comparison:
+
+```bash
+docker compose --profile loadtest run --rm k6 run /scripts/degraded.js
+```
+
+Run a single-path isolation test:
+
+```bash
+docker compose --profile loadtest run --rm -e TARGET_OPERATION=dependency k6 run /scripts/isolation.js
+```
+
+Other included scenarios:
+
+- `/scripts/spike.js`
+- `/scripts/stress.js`
+- `/scripts/stress-500.js`
+- `/scripts/soak.js`
+- `/scripts/breakpoint.js`
+
+## Recommended First Dashboard View
+
+After running `baseline.js`, open:
 
 - `System Overview`
 - `Infrastructure Overview`
 - `Load Test Correlation`
-- `Endpoint Comparison`
-- `Dependency Health`
-- `Root Cause Drilldown`
 
-## Load Tests
+Then use:
 
-Run smoke test:
+- `Endpoint Comparison` for route and mode comparisons
+- `Dependency Health` for downstream behavior
+- Grafana logs and traces for drilldown
 
-```powershell
-docker compose --profile loadtest run --rm k6
+## Stop And Reset
+
+Stop the stack:
+
+```bash
+docker compose down
 ```
 
-Run the lecture-aligned scenarios:
+Stop and remove persisted observability data:
 
-```powershell
-docker compose --profile loadtest run --rm k6 run /scripts/isolation.js
-docker compose --profile loadtest run --rm k6 run /scripts/baseline.js
-docker compose --profile loadtest run --rm k6 run /scripts/spike.js
-docker compose --profile loadtest run --rm k6 run /scripts/stress.js
-docker compose --profile loadtest run --rm k6 run /scripts/stress-500.js
-docker compose --profile loadtest run --rm k6 run /scripts/soak.js
-docker compose --profile loadtest run --rm k6 run /scripts/breakpoint.js
-docker compose --profile loadtest run --rm k6 run /scripts/degraded.js
+```bash
+docker compose down -v
 ```
 
-Run isolation against a specific operation:
+## Documentation
 
-```powershell
-docker compose --profile loadtest run --rm -e TARGET_OPERATION=dependency k6 run /scripts/isolation.js
-```
+Use [`manual.md`](/media/sf_university-hpc/manual.md) as the source of truth for:
 
-Optional overrides for the lecture scenarios:
-
-```powershell
-docker compose --profile loadtest run --rm -e SOAK_DURATION=30m k6 run /scripts/soak.js
-docker compose --profile loadtest run --rm -e BREAKPOINT_STEP_DURATION=60s -e BREAKPOINT_MAX_VUS=200 k6 run /scripts/breakpoint.js
-```
-
-`stress-500.js` is the advanced profile and is intended for stronger laptops or instructor-led demonstrations, not as the default classroom run.
-
-## Lecture Mapping
-
-| Lecture Type | Script | Scope / Intent | Watch First | Result |
-| --- | --- | --- | --- | --- |
-| `isolation` | `isolation.js` | Single-path test for one operation (`fast`, `search`, or `dependency`) | endpoint latency | pass/fail |
-| `load` | `baseline.js` | Nominal representative mix for the baseline | p95 latency, error rate | pass/fail |
-| `load` degraded variant | `degraded.js` | Same teaching flow as load, but with injected dependency slowdown | p95 latency, dependency errors | pass/fail |
-| `spike` | `spike.js` | Ten sharp bursts to show repeated tail-latency spikes | request-rate and VU peaks | pass/fail |
-| `stress` | `stress.js` | Student-safe stepped ramp to observe degradation | latency growth vs CPU | observational |
-| `stress` extended profile | `stress-500.js` | Advanced stepped ramp up to `500` VUs | saturation point and error growth | observational |
-| `soak` | `soak.js` | Sustained nominal traffic to inspect drift over time | memory and latency drift | pass/fail |
-| `breakpoint` | `breakpoint.js` | Capacity ramp that stops at the first sustained SLO breach | breaking stage and last passing stage | pass/fail with abort |
-
-All request metrics are tagged with `scenario`, `test_type`, `variant`, `run_profile`, `workload_profile`, and `operation` so Grafana can filter by lecture taxonomy instead of only by script name.
-
-`configuration` testing and `internet` testing from the lecture are not implemented in this phase.
-
-## Demo Endpoints
-
-- `GET /health`
-- `GET /metrics`
-- `GET /api/items/:id`
-- `GET /api/search?q=...`
-- `GET /api/report?mode=fast|slow|dependency|degraded|error`
-
-Report mode behavior:
-
-- `fast`: immediate response
-- `slow`: fixed `150ms` delay
-- `dependency`: internal dependency call with `75ms` latency
-- `degraded`: internal dependency call with `400ms` latency and `5%` failure rate
-- `error`: immediate `503`
-
-## Teaching Flow
-
-1. Start the stack.
-2. Run `baseline.js`.
-3. Inspect `System Overview`, `Infrastructure Overview`, and `Load Test Correlation` together to compare request rate, latency, active VUs, CPU, memory, disk, and network usage.
-4. Run one lecture test type that contrasts with baseline: `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
-5. Run `degraded.js` to compare nominal vs degraded `load`.
-6. Compare `Endpoint Comparison` and `Dependency Health` against the hardware dashboards to see whether the bottleneck is resource saturation or an application-level dependency slowdown.
-7. Use Grafana logs and trace links to move from symptoms to root cause.
-
-## Notes
-
-- `Tempo` is intentionally pinned to `grafana/tempo:2.6.0` in [`docker-compose.yml`](/G:/codex-projects/university-hpc/docker-compose.yml) to keep the local monolithic trace backend stable for this demo.
-- Loki logs include `trace_id`, and the provisioned Grafana Loki data source links matching log lines directly into Tempo traces.
-- The hardware dashboards show the Docker runtime environment used by Docker Desktop on the laptop, not the native host operating system outside Docker.
-- `k6` exports its run metrics into the same Prometheus instance, so Grafana can correlate VUs, request rate, and latency with host and container utilization during each scenario.
+- repository structure
+- service responsibilities
+- observability configuration
+- container build design
+- dashboard provisioning
+- how metrics, logs, traces, and load tests are interconnected
+- scenario behavior and teaching flow
