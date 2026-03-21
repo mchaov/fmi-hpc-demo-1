@@ -117,6 +117,19 @@ export function getCommonTestTags(metadata) {
   };
 }
 
+export function buildScenarioOptions(metadata, scenarioOptions, extraOptions = {}) {
+  return {
+    scenarios: {
+      [metadata.scenario]: {
+        exec: 'default',
+        tags: getCommonTestTags(metadata),
+        ...scenarioOptions
+      }
+    },
+    ...extraOptions
+  };
+}
+
 function getRequestName(operation) {
   if (operation === 'health' || operation === 'metrics') {
     return operation;

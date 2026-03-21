@@ -1,6 +1,6 @@
 import {
+  buildScenarioOptions,
   createSummaryHandler,
-  getCommonTestTags,
   runReportMode,
   runSearch
 } from './common.js';
@@ -32,15 +32,16 @@ const metadata = {
   notes: 'Single-path measurement to isolate one operation from the mixed workload.'
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'constant-vus',
   vus: 10,
-  duration: '2m',
-  tags: getCommonTestTags(metadata),
+  duration: '2m'
+}, {
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: [`p(95)<${OPERATION_THRESHOLDS[TARGET_OPERATION]}`]
   }
-};
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

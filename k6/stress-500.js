@@ -1,8 +1,8 @@
 import {
   STRESS_MIX,
+  buildScenarioOptions,
   createSummaryHandler,
   describeMix,
-  getCommonTestTags,
   runReportMode,
   runSearch,
   weightedReportMode
@@ -23,7 +23,8 @@ const metadata = {
   notes: 'Advanced stress ramp up to 500 VUs.'
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'ramping-vus',
   stages: [
     { duration: '60s', target: 50 },
     { duration: '60s', target: 100 },
@@ -36,9 +37,8 @@ export const options = {
     { duration: '60s', target: 450 },
     { duration: '60s', target: 500 },
     { duration: '30s', target: 0 }
-  ],
-  tags: getCommonTestTags(metadata)
-};
+  ]
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

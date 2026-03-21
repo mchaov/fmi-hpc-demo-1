@@ -1,8 +1,8 @@
 import {
   BASELINE_MIX,
+  buildScenarioOptions,
   createSummaryHandler,
   describeMix,
-  getCommonTestTags,
   readDurationEnv,
   runReportMode,
   runSearch,
@@ -27,15 +27,16 @@ const metadata = {
   notes: `Sustained representative load for ${SOAK_DURATION} to inspect drift and resource stability.`
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'constant-vus',
   vus: 20,
-  duration: SOAK_DURATION,
-  tags: getCommonTestTags(metadata),
+  duration: SOAK_DURATION
+}, {
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<700']
   }
-};
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

@@ -1,9 +1,9 @@
 import {
   BASELINE_MIX,
+  buildScenarioOptions,
   buildStageMetadata,
   createSummaryHandler,
   describeMix,
-  getCommonTestTags,
   readDurationEnv,
   readPositiveIntEnv,
   runReportMode,
@@ -47,12 +47,13 @@ const metadata = {
   breakpointStages: buildStageMetadata(breakpointStages)
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'ramping-vus',
   stages: [
     ...breakpointStages,
     { duration: '30s', target: 0 }
-  ],
-  tags: getCommonTestTags(metadata),
+  ]
+}, {
   thresholds: {
     http_req_failed: [
       {
@@ -69,7 +70,7 @@ export const options = {
       }
     ]
   }
-};
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

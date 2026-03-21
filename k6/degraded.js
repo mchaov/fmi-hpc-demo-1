@@ -1,8 +1,8 @@
 import {
   DEGRADED_MIX,
+  buildScenarioOptions,
   createSummaryHandler,
   describeMix,
-  getCommonTestTags,
   runReportMode,
   runSearch,
   weightedReportMode
@@ -24,15 +24,16 @@ const metadata = {
   notes: 'Degraded comparison against nominal load with dependency slowdown injected.'
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'constant-vus',
   vus: 20,
-  duration: '2m',
-  tags: getCommonTestTags(metadata),
+  duration: '2m'
+}, {
   thresholds: {
     http_req_failed: ['rate<0.08'],
     http_req_duration: ['p(95)<1200']
   }
-};
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

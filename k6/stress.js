@@ -1,8 +1,8 @@
 import {
   STRESS_MIX,
+  buildScenarioOptions,
   createSummaryHandler,
   describeMix,
-  getCommonTestTags,
   runReportMode,
   runSearch,
   weightedReportMode
@@ -23,16 +23,16 @@ const metadata = {
   notes: 'Student-safe stress ramp for capacity observation.'
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'ramping-vus',
   stages: [
     { duration: '2m', target: 20 },
     { duration: '2m', target: 40 },
     { duration: '2m', target: 80 },
     { duration: '2m', target: 120 },
     { duration: '30s', target: 0 }
-  ],
-  tags: getCommonTestTags(metadata)
-};
+  ]
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

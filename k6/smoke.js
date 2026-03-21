@@ -3,8 +3,8 @@ import http from 'k6/http';
 
 import {
   BASE_URL,
+  buildScenarioOptions,
   createSummaryHandler,
-  getCommonTestTags,
   getScenarioRequestOptions
 } from './common.js';
 
@@ -23,15 +23,16 @@ const metadata = {
   notes: 'Operational preflight; not part of the lecture taxonomy.'
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'shared-iterations',
   vus: 1,
-  iterations: 5,
-  tags: getCommonTestTags(metadata),
+  iterations: 5
+}, {
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<300']
   }
-};
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

@@ -1,8 +1,8 @@
 import {
   BASELINE_MIX,
+  buildScenarioOptions,
   createSummaryHandler,
   describeMix,
-  getCommonTestTags,
   runReportMode,
   runSearch,
   weightedReportMode
@@ -24,7 +24,8 @@ const metadata = {
   notes: 'Two-minute nominal load followed by escalating spikes to 60, 110, and 160 VUs with repeated returns to baseline.'
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'ramping-vus',
   stages: [
     { duration: '30s', target: 10 },
     { duration: '10s', target: 60 },
@@ -40,13 +41,13 @@ export const options = {
     { duration: '10s', target: 310 },
     { duration: '30s', target: 10 },
     { duration: '10s', target: 0 }
-  ],
-  tags: getCommonTestTags(metadata),
+  ]
+}, {
   thresholds: {
     http_req_failed: ['rate<0.03'],
     http_req_duration: ['p(99)<2500']
   }
-};
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 

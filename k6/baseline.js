@@ -1,8 +1,8 @@
 import {
   BASELINE_MIX,
+  buildScenarioOptions,
   createSummaryHandler,
   describeMix,
-  getCommonTestTags,
   runReportMode,
   runSearch,
   weightedReportMode
@@ -25,15 +25,16 @@ const metadata = {
   notes: 'Representative nominal load for baseline comparison.'
 };
 
-export const options = {
+export const options = buildScenarioOptions(metadata, {
+  executor: 'constant-vus',
   vus: 20,
-  duration: '2m',
-  tags: getCommonTestTags(metadata),
+  duration: '2m'
+}, {
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<500', 'p(99)<1200']
   }
-};
+});
 
 export const handleSummary = createSummaryHandler(metadata);
 
