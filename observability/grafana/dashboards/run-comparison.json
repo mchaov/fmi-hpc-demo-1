@@ -50,7 +50,7 @@
       },
       "id": 1,
       "options": {
-        "content": "**Scenario:** ${scenario:csv}  \n**Test Type:** ${test_type:csv}  \n**Variant:** ${variant:csv}  \n**Run Profile:** ${run_profile:csv}  \n**Workload Profile:** ${workload_profile:csv}  \n**Base Run:** ${base_run_id}  \n**Candidate Run:** ${candidate_run_id}  \n**Operation:** ${operation:csv}  \nSet the Grafana time range to cover both runs. Summary and workload panels are run-scoped from `k6` metrics. Service metrics still do not carry `test_run_id`, so strict run isolation on the service side still lives in logs and traces.",
+        "content": "**Scenario:** ${scenario:csv}  \n**Test Type:** ${test_type:csv}  \n**Variant:** ${variant:csv}  \n**Run Profile:** ${run_profile:csv}  \n**Workload Profile:** ${workload_profile:csv}  \n**Base Run:** ${base_run_id}  \n**Candidate Run:** ${candidate_run_id}  \n**Operation:** ${operation:csv}  \nRun selectors look back across the last 30 days of `k6` data. Set the Grafana time range to cover both runs before reading the summary and workload panels. Service metrics still do not carry `test_run_id`, so strict run isolation on the service side still lives in logs and traces.",
         "mode": "markdown"
       },
       "title": "Comparison Scope",
@@ -1542,7 +1542,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"}, test_run_id)",
+        "definition": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
         "includeAll": false,
         "label": "Base Run ID",
         "multi": false,
@@ -1550,9 +1550,10 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"}, test_run_id)",
+          "query": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
           "refId": "PrometheusVariableQueryEditor-BaseRun"
         },
+        "regex": "/test_run_id=\"([^\"]+)\"/",
         "refresh": 2,
         "sort": 3,
         "type": "query"
@@ -1567,7 +1568,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"}, test_run_id)",
+        "definition": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
         "includeAll": false,
         "label": "Candidate Run ID",
         "multi": false,
@@ -1575,9 +1576,10 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\"}, test_run_id)",
+          "query": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
           "refId": "PrometheusVariableQueryEditor-CandidateRun"
         },
+        "regex": "/test_run_id=\"([^\"]+)\"/",
         "refresh": 2,
         "sort": 3,
         "type": "query"
@@ -1610,7 +1612,7 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-30d",
     "to": "now"
   },
   "title": "Run Comparison",

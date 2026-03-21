@@ -420,7 +420,7 @@ The repository includes these scenarios:
 - `baseline`: representative mixed nominal traffic
 - `degraded`: representative traffic with more degraded dependency-backed work
 - `isolation`: single-path measurement for one operation
-- `spike`: repeated bursts to expose latency spikes
+- `spike`: two minutes of nominal load followed by escalating spikes and repeated returns to baseline
 - `stress`: stepped student-safe capacity ramp
 - `stress-500`: extended instructor-grade stress ramp
 - `soak`: sustained traffic for drift and stability checks
