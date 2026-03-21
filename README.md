@@ -7,7 +7,7 @@ Docker-based local teaching lab for:
 - repeatable load testing
 - cross-service root-cause analysis
 
-Detailed repository documentation, configuration, and tool interconnections live in [`manual.md`](/media/sf_university-hpc/manual.md). This `README.md` is the quick setup guide.
+Detailed repository documentation, configuration, and tool interconnections live in [`manual.md`](./manual.md). This `README.md` is the quick setup guide.
 
 ## Prerequisites
 
@@ -116,7 +116,7 @@ docker compose down -v
 
 ## Documentation
 
-Use [`manual.md`](/media/sf_university-hpc/manual.md) as the source of truth for:
+Use [`manual.md`](./manual.md) as the source of truth for:
 
 - repository structure
 - service responsibilities

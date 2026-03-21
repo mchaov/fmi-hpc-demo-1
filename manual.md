@@ -20,38 +20,38 @@ At a high level, the repository contains four things:
 1. a demo application stack
 2. an observability stack
 3. load-test scenarios
-4. supporting course and planning material
+4. supporting repository documentation and planning material
 
 ## Repository Layout
 
 ### Root files
 
-- [`README.md`](/media/sf_university-hpc/README.md): short project overview and quick-start commands
-- [`manual.md`](/media/sf_university-hpc/manual.md): this detailed manual
-- [`docker-compose.yml`](/media/sf_university-hpc/docker-compose.yml): main orchestration file for the entire lab
-- [`course-evaluation-and-demo-plan.md`](/media/sf_university-hpc/course-evaluation-and-demo-plan.md): rationale for the teaching lab and scope decisions
-- [`development-plan.md`](/media/sf_university-hpc/development-plan.md): dashboard and observability roadmap
+- [`README.md`](./README.md): short project overview and quick-start commands
+- [`manual.md`](./manual.md): this detailed manual
+- [`docker-compose.yml`](./docker-compose.yml): main orchestration file for the entire lab
+- `course-evaluation-and-demo-plan.md`: local planning document name reserved in `.gitignore`, not part of the tracked repository
+- [`development-plan.md`](./development-plan.md): dashboard and observability roadmap when present in the working tree
 
 ### Application services
 
-- [`services/api`](/media/sf_university-hpc/services/api): primary demo API
-- [`services/dependency`](/media/sf_university-hpc/services/dependency): downstream helper service used to simulate latency and failures
+- [`services/api`](./services/api): primary demo API
+- [`services/dependency`](./services/dependency): downstream helper service used to simulate latency and failures
 
 ### Load testing
 
-- [`k6`](/media/sf_university-hpc/k6): `k6` scenarios and shared helpers
+- [`k6`](./k6): `k6` scenarios and shared helpers
 
 ### Observability
 
-- [`observability/prometheus`](/media/sf_university-hpc/observability/prometheus): Prometheus configuration and image build
-- [`observability/grafana`](/media/sf_university-hpc/observability/grafana): Grafana image build, provisioning, and dashboards
-- [`observability/loki`](/media/sf_university-hpc/observability/loki): Loki configuration and image build
-- [`observability/promtail`](/media/sf_university-hpc/observability/promtail): Promtail configuration and image build
-- [`observability/tempo`](/media/sf_university-hpc/observability/tempo): Tempo configuration and image build
+- [`observability/prometheus`](./observability/prometheus): Prometheus configuration and image build
+- [`observability/grafana`](./observability/grafana): Grafana image build, provisioning, and dashboards
+- [`observability/loki`](./observability/loki): Loki configuration and image build
+- [`observability/promtail`](./observability/promtail): Promtail configuration and image build
+- [`observability/tempo`](./observability/tempo): Tempo configuration and image build
 
-### Course material
+### Local-only material
 
-- [`course-content`](/media/sf_university-hpc/course-content): lecture PDFs used as the conceptual source material for the lab design
+- `course-content/`: a local course-material directory name reserved in `.gitignore`; it is not part of the tracked repository
 
 ## What The Stack Looks Like
 
@@ -187,7 +187,7 @@ The default command runs the smoke scenario. Other scenarios are started explici
 
 ## Docker Compose As The Top-Level Orchestrator
 
-[`docker-compose.yml`](/media/sf_university-hpc/docker-compose.yml) is the single source of truth for the runtime stack.
+[`docker-compose.yml`](./docker-compose.yml) is the single source of truth for the runtime stack.
 
 It defines:
 
@@ -301,7 +301,7 @@ Grafana queries:
 - Loki for logs
 - Tempo for traces
 
-It uses provisioned datasources from [`datasources.yml`](/media/sf_university-hpc/observability/grafana/provisioning/datasources/datasources.yml), so there is no manual datasource setup step.
+It uses provisioned datasources from [`datasources.yml`](./observability/grafana/provisioning/datasources/datasources.yml), so there is no manual datasource setup step.
 
 ## Application Internals
 
@@ -383,7 +383,7 @@ The API creates server spans for incoming requests and client spans for dependen
 
 ## Shared `k6` helpers
 
-[`k6/common.js`](/media/sf_university-hpc/k6/common.js) centralizes:
+[`k6/common.js`](./k6/common.js) centralizes:
 
 - request execution helpers
 - metadata tag generation
@@ -499,7 +499,7 @@ Grafana provisions a folder named `HPC Demo` and loads these dashboards:
 
 ### Current dashboard roadmap status
 
-[`development-plan.md`](/media/sf_university-hpc/development-plan.md) captures ongoing dashboard work. The repository already includes the phase-2 workload mix row in `Load Test Correlation`, while later documentation and some later dashboard phases remain incomplete.
+[`development-plan.md`](./development-plan.md) captures ongoing dashboard work when that file exists in the working tree. The repository already includes the phase-2 workload mix row in `Load Test Correlation`, while later documentation and some later dashboard phases remain incomplete.
 
 ## How To Start And Use The Lab
 
@@ -628,19 +628,19 @@ That is not just stylistic. It prevents container-side permission problems that 
 
 Grafana provisioning files live under:
 
-- [`observability/grafana/provisioning`](/media/sf_university-hpc/observability/grafana/provisioning)
+- [`observability/grafana/provisioning`](./observability/grafana/provisioning)
 
 Dashboard JSON files live under:
 
-- [`observability/grafana/dashboards`](/media/sf_university-hpc/observability/grafana/dashboards)
+- [`observability/grafana/dashboards`](./observability/grafana/dashboards)
 
 At image build time they are copied into `/etc/grafana/...`, not into the persistent Grafana data volume, so a named volume on `/var/lib/grafana` does not hide them.
 
 ## Supporting documents
 
-- [`course-evaluation-and-demo-plan.md`](/media/sf_university-hpc/course-evaluation-and-demo-plan.md): explains why the lab uses this architecture and where it fits in the course
-- [`development-plan.md`](/media/sf_university-hpc/development-plan.md): describes dashboard improvements that are still in progress
-- [`course-content`](/media/sf_university-hpc/course-content): source lecture material that motivates the demo system
+- `course-evaluation-and-demo-plan.md`: local planning document name reserved in `.gitignore`, not part of the tracked repository
+- [`development-plan.md`](./development-plan.md): describes dashboard improvements that are still in progress when the file is present locally
+- `course-content/`: local course material directory name reserved in `.gitignore`, not part of the tracked repository
 
 ## Known Limits And Current Gaps
 
@@ -664,9 +664,9 @@ This repository is a Docker-based teaching lab where:
 
 If you want to understand the repo quickly, start from:
 
-1. [`docker-compose.yml`](/media/sf_university-hpc/docker-compose.yml)
-2. [`services/api/src/app.js`](/media/sf_university-hpc/services/api/src/app.js)
-3. [`k6/common.js`](/media/sf_university-hpc/k6/common.js)
-4. [`observability/prometheus/prometheus.yml`](/media/sf_university-hpc/observability/prometheus/prometheus.yml)
-5. [`observability/grafana/provisioning/datasources/datasources.yml`](/media/sf_university-hpc/observability/grafana/provisioning/datasources/datasources.yml)
-6. [`observability/grafana/dashboards/load-test-correlation.json`](/media/sf_university-hpc/observability/grafana/dashboards/load-test-correlation.json)
+1. [`docker-compose.yml`](./docker-compose.yml)
+2. [`services/api/src/app.js`](./services/api/src/app.js)
+3. [`k6/common.js`](./k6/common.js)
+4. [`observability/prometheus/prometheus.yml`](./observability/prometheus/prometheus.yml)
+5. [`observability/grafana/provisioning/datasources/datasources.yml`](./observability/grafana/provisioning/datasources/datasources.yml)
+6. [`observability/grafana/dashboards/load-test-correlation.json`](./observability/grafana/dashboards/load-test-correlation.json)
