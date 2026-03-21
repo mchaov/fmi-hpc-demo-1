@@ -63,6 +63,7 @@ services:
     depends_on:
       - api
       - dependency
+      - docker-metrics
       - cadvisor
       - node-exporter
 
@@ -112,6 +113,19 @@ services:
       - "-config.file=/etc/tempo/tempo.yml"
     volumes:
       - tempo-data:/var/tempo
+
+  docker-metrics:
+    build:
+      context: ./services/docker-metrics
+    container_name: university-hpc-docker-metrics
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9105/health').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1

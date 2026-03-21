@@ -63,6 +63,7 @@ k6 ---> demo-api ---> demo-dependency
  |                         |
  +--> remote write --------+--> Prometheus -> Grafana
 
+docker-metrics ------------+
 cadvisor ------------------+
 node-exporter ------------+
 ```
@@ -110,6 +111,7 @@ Prometheus scrapes metrics from:
 
 - `demo-api`
 - `demo-dependency`
+- `docker-metrics`
 - `cadvisor`
 - `node-exporter`
 
@@ -157,11 +159,12 @@ Tempo is intentionally kept simple:
 
 It is not published on a host port in the current compose file. It is meant to be reached by Grafana over the internal compose network.
 
-### `cadvisor` and `node-exporter`
+### `docker-metrics`, `cadvisor`, and `node-exporter`
 
 These provide host and container resource telemetry:
 
-- `cadvisor`: container-level CPU, memory, filesystem, and runtime metrics
+- `docker-metrics`: Docker-socket-backed per-container CPU, memory, network, and block I/O metrics with Compose labels for dashboard grouping
+- `cadvisor`: cgroup- and container-runtime-level telemetry that still provides broad host/container context
 - `node-exporter`: host-level CPU, memory, disk, network, and filesystem metrics
 
 Those metrics are what let the dashboards correlate application symptoms with hardware and container pressure.
@@ -199,6 +202,7 @@ These services are built from repository source:
 
 - `api`
 - `dependency`
+- `docker-metrics`
 - `prometheus`
 - `grafana`
 - `loki`

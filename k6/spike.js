@@ -26,18 +26,18 @@ const metadata = {
 
 export const options = {
   stages: [
-    { duration: '2m', target: 10 },
-    { duration: '30s', target: 60 },
     { duration: '30s', target: 10 },
-    { duration: '30s', target: 110 },
+    { duration: '10s', target: 60 },
     { duration: '30s', target: 10 },
-    { duration: '30s', target: 160 },
+    { duration: '10s', target: 110 },
     { duration: '30s', target: 10 },
-    { duration: '30s', target: 160 },
+    { duration: '10s', target: 160 },
     { duration: '30s', target: 10 },
-    { duration: '30s', target: 160 },
+    { duration: '10s', target: 210 },
     { duration: '30s', target: 10 },
-    { duration: '30s', target: 160 },
+    { duration: '10s', target: 260 },
+    { duration: '30s', target: 10 },
+    { duration: '10s', target: 310 },
     { duration: '30s', target: 10 },
     { duration: '10s', target: 0 }
   ],
