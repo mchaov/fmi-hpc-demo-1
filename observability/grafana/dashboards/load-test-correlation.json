@@ -872,7 +872,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (compose_service) (rate(container_cpu_usage_seconds_total{job=\"docker-metrics\",compose_project=~\"$compose_project\",compose_service=~\"$compose_service\"}[$__rate_interval])) / clamp_min(count(count(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}) by (cpu)), 1)",
+          "expr": "sum by (compose_service) (rate(container_cpu_usage_seconds_total{job=\"docker-metrics\",compose_project=~\"$compose_project\",compose_service=~\"$compose_service\"}[$__rate_interval])) / scalar(clamp_min(count(count(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}) by (cpu)), 1))",
           "legendFormat": "{{compose_service}}",
           "refId": "A"
         },
@@ -1065,7 +1065,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])) / clamp_min(sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])), 0.0001)",
+          "expr": "sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])) / scalar(clamp_min(sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])), 0.0001))",
           "legendFormat": "actual {{operation}}",
           "refId": "A"
         },
@@ -1118,7 +1118,7 @@
       },
       "targets": [
         {
-          "expr": "(sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])) / clamp_min(sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])), 0.0001)) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__range]))",
+          "expr": "(sum by (operation) (rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])) / scalar(clamp_min(sum(rate(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__rate_interval])), 0.0001))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",test_run_id=~\"$test_run_id\",workload_profile=~\"$workload_profile\",operation=~\"$operation\"}[$__range]))",
           "legendFormat": "{{operation}}",
           "refId": "A"
         }
@@ -1484,5 +1484,5 @@
   },
   "title": "Load Test Correlation",
   "uid": "load-test-correlation",
-  "version": 6
+  "version": 7
 }

@@ -621,7 +621,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (compose_service) (rate(container_cpu_usage_seconds_total{job=\"docker-metrics\",compose_project=~\"$compose_project\",compose_service=~\"$compose_service\"}[$__rate_interval])) / clamp_min(count(count(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}) by (cpu)), 1)",
+          "expr": "sum by (compose_service) (rate(container_cpu_usage_seconds_total{job=\"docker-metrics\",compose_project=~\"$compose_project\",compose_service=~\"$compose_service\"}[$__rate_interval])) / scalar(clamp_min(count(count(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}) by (cpu)), 1))",
           "legendFormat": "{{compose_service}}",
           "refId": "A"
         }
@@ -952,5 +952,5 @@
   },
   "title": "Infrastructure Overview",
   "uid": "infrastructure-overview",
-  "version": 2
+  "version": 3
 }
