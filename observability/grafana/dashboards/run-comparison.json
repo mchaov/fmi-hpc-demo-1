@@ -1542,7 +1542,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}, test_run_id)",
         "includeAll": false,
         "label": "Base Run ID",
         "multi": false,
@@ -1550,10 +1550,9 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}, test_run_id)",
           "refId": "PrometheusVariableQueryEditor-BaseRun"
         },
-        "regex": "/test_run_id=\"([^\"]+)\"/",
         "refresh": 2,
         "sort": 3,
         "type": "query"
@@ -1568,7 +1567,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
+        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}, test_run_id)",
         "includeAll": false,
         "label": "Candidate Run ID",
         "multi": false,
@@ -1576,10 +1575,9 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "query_result(sum by (test_run_id) (max_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}[30d])))",
+          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=~\".+\"}, test_run_id)",
           "refId": "PrometheusVariableQueryEditor-CandidateRun"
         },
-        "regex": "/test_run_id=\"([^\"]+)\"/",
         "refresh": 2,
         "sort": 3,
         "type": "query"
