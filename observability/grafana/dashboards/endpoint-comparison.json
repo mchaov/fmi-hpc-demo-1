@@ -19,6 +19,21 @@
   "graphTooltip": 0,
   "panels": [
     {
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "content": "**Workload Profile:** ${workload_profile:csv}  \n**Operation:** ${operation:csv}  \n**API Route:** ${route:csv}  \n**API Mode:** ${mode:csv}  \nService-side panels are filtered by `route` and `mode`. Use the dashboard time range to align them with the selected k6 workload slice.",
+        "mode": "markdown"
+      },
+      "title": "Selected Filters",
+      "type": "text"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -41,7 +56,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 4
       },
       "id": 1,
       "options": {
@@ -57,7 +72,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (route) (rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}[1m]))",
+          "expr": "sum by (route) (rate(http_requests_total{service=\"demo-api\",route=~\"$route\",mode=~\"$mode\",route!~\"/(metrics|health)\"}[1m]))",
           "legendFormat": "{{route}}",
           "refId": "A"
         }
@@ -88,7 +103,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 4
       },
       "id": 2,
       "options": {
@@ -104,7 +119,7 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (route, le) (rate(http_request_duration_seconds_bucket{service=\"demo-api\",route!~\"/(metrics|health)\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (route, le) (rate(http_request_duration_seconds_bucket{service=\"demo-api\",route=~\"$route\",mode=~\"$mode\",route!~\"/(metrics|health)\"}[5m])))",
           "legendFormat": "{{route}}",
           "refId": "A"
         }
@@ -136,7 +151,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 12
       },
       "id": 3,
       "options": {
@@ -152,7 +167,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (route) (rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\",status_code=~\"5..\"}[5m])) / clamp_min(sum by (route) (rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}[5m])), 0.0001)",
+          "expr": "sum by (route) (rate(http_requests_total{service=\"demo-api\",route=~\"$route\",mode=~\"$mode\",route!~\"/(metrics|health)\",status_code=~\"5..\"}[5m])) / clamp_min(sum by (route) (rate(http_requests_total{service=\"demo-api\",route=~\"$route\",mode=~\"$mode\",route!~\"/(metrics|health)\"}[5m])), 0.0001)",
           "legendFormat": "{{route}}",
           "refId": "A"
         }
@@ -177,7 +192,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 12
       },
       "id": 4,
       "options": {
@@ -193,7 +208,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (mode) (rate(http_requests_total{service=\"demo-api\",route=\"/api/report\"}[5m]))",
+          "expr": "sum by (mode) (rate(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"$mode\"}[5m]))",
           "legendFormat": "{{mode}}",
           "refId": "A"
         }
@@ -210,7 +225,108 @@
     "performance"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(k6_http_reqs_total{scenario!=\"default\"}, workload_profile)",
+        "includeAll": true,
+        "label": "Workload Profile",
+        "multi": true,
+        "name": "workload_profile",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(k6_http_reqs_total{scenario!=\"default\"}, workload_profile)",
+          "refId": "PrometheusVariableQueryEditor-WorkloadProfile"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(k6_http_reqs_total{scenario!=\"default\",workload_profile=~\"$workload_profile\"}, operation)",
+        "includeAll": true,
+        "label": "Operation",
+        "multi": true,
+        "name": "operation",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(k6_http_reqs_total{scenario!=\"default\",workload_profile=~\"$workload_profile\"}, operation)",
+          "refId": "PrometheusVariableQueryEditor-Operation"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}, route)",
+        "includeAll": true,
+        "label": "API Route",
+        "multi": true,
+        "name": "route",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}, route)",
+          "refId": "PrometheusVariableQueryEditor-Route"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(http_requests_total{service=\"demo-api\",route=~\"$route\",route!~\"/(metrics|health)\"}, mode)",
+        "includeAll": true,
+        "label": "API Mode",
+        "multi": true,
+        "name": "mode",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(http_requests_total{service=\"demo-api\",route=~\"$route\",route!~\"/(metrics|health)\"}, mode)",
+          "refId": "PrometheusVariableQueryEditor-Mode"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-15m",
@@ -218,5 +334,5 @@
   },
   "title": "Endpoint Comparison",
   "uid": "endpoint-comparison",
-  "version": 1
+  "version": 2
 }
