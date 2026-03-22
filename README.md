@@ -1,4 +1,4 @@
-# University HPC Performance Demo
+# University Observability Demo
 
 Docker-based local teaching lab for:
 
