@@ -21,26 +21,36 @@ const metadata = {
     'http_req_failed rate < 0.03',
     'http_req_duration p(99) < 2500ms'
   ],
-  notes: 'Two-minute nominal load followed by escalating spikes to 60, 110, and 160 VUs with repeated returns to baseline.'
+  notes: 'Nominal load followed by escalating spikes to 60, 90, 150, 200, 300 VUs with repeated returns to baseline.'
 };
 
 export const options = buildScenarioOptions(metadata, {
   executor: 'ramping-vus',
   stages: [
-    { duration: '30s', target: 10 },
-    { duration: '10s', target: 60 },
-    { duration: '30s', target: 10 },
-    { duration: '10s', target: 110 },
-    { duration: '30s', target: 10 },
-    { duration: '10s', target: 160 },
-    { duration: '30s', target: 10 },
-    { duration: '10s', target: 210 },
-    { duration: '30s', target: 10 },
-    { duration: '10s', target: 260 },
-    { duration: '30s', target: 10 },
-    { duration: '10s', target: 310 },
-    { duration: '30s', target: 10 },
-    { duration: '10s', target: 0 }
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 60 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 90 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 150 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 150 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 150 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 200 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 200 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 200 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 200 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 300 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 300 },
+    { duration: '30s', target: 5 },
+    { duration: '60s', target: 0 }
   ]
 }, {
   thresholds: {
