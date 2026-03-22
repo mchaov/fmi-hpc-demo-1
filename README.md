@@ -1,4 +1,4 @@
-# University Observability Demo
+# Observability Demo
 
 Docker-based local teaching lab for:
 
