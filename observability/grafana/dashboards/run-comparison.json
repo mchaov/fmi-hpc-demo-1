@@ -19,6 +19,20 @@
   "graphTooltip": 0,
   "links": [
     {
+      "includeVars": false,
+      "keepTime": true,
+      "title": "Inspect base",
+      "type": "link",
+      "url": "/d/root-cause-drilldown/root-cause-drilldown?var-test_run_id=${base_run_id:percentencode}"
+    },
+    {
+      "includeVars": false,
+      "keepTime": true,
+      "title": "Inspect candidate",
+      "type": "link",
+      "url": "/d/root-cause-drilldown/root-cause-drilldown?var-test_run_id=${candidate_run_id:percentencode}"
+    },
+    {
       "includeVars": true,
       "keepTime": true,
       "title": "Load Test Correlation",
@@ -42,18 +56,116 @@
   ],
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "—",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "nan",
+                "result": {
+                  "text": "—"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 4,
-        "w": 24,
         "x": 0,
-        "y": 0
+        "y": 0,
+        "w": 24,
+        "h": 9
+      },
+      "id": 2,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "label_replace((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))) or vector(0/0), \"Metric\", \"Total requests\", \"\", \"\")\nor\nlabel_replace((1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))) or vector(0/0), \"Metric\", \"p95 latency (ms)\", \"\", \"\")\nor\nlabel_replace((100 * ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0))) or vector(0/0), \"Metric\", \"Error rate (%)\", \"\", \"\")\nor\nlabel_replace((avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))) or vector(0/0), \"Metric\", \"Average VUs\", \"\", \"\")\nor\nlabel_replace((100 * ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0))) or vector(0/0), \"Metric\", \"Dependency share (%)\", \"\", \"\")\nor\nlabel_replace((50 * sum(abs((((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0)) - (max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))))\n or (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0))\n or -(max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))))\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0)\nand on() max(last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))))) or vector(0/0), \"Metric\", \"Workload-mix drift (%)\", \"\", \"\")",
+          "format": "table",
+          "instant": true,
+          "range": false
+        },
+        {
+          "refId": "B",
+          "expr": "label_replace((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))) or vector(0/0), \"Metric\", \"Total requests\", \"\", \"\")\nor\nlabel_replace((1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])))) or vector(0/0), \"Metric\", \"p95 latency (ms)\", \"\", \"\")\nor\nlabel_replace((100 * ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0))) or vector(0/0), \"Metric\", \"Error rate (%)\", \"\", \"\")\nor\nlabel_replace((avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))) or vector(0/0), \"Metric\", \"Average VUs\", \"\", \"\")\nor\nlabel_replace((100 * ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0))) or vector(0/0), \"Metric\", \"Dependency share (%)\", \"\", \"\")\nor\nlabel_replace((50 * sum(abs((((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0)) - (max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))\n or (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0))\n or -(max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0)\nand on() max(last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))) or vector(0/0), \"Metric\", \"Workload-mix drift (%)\", \"\", \"\")",
+          "format": "table",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "title": "Run comparison",
+      "type": "table",
+      "description": "Each row summarizes the selected run as of the end of the displayed interval, using up to 30 days of samples. Change is candidate minus base. Percentage rows change in percentage points. An em dash indicates a missing measurement.",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "Metric",
+            "mode": "outerTabular"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true
+            },
+            "indexByName": {
+              "Metric": 0,
+              "Value #A": 1,
+              "Value #B": 2
+            },
+            "renameByName": {
+              "Value #A": "Base",
+              "Value #B": "Candidate"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "binary",
+            "binary": {
+              "left": "Candidate",
+              "operator": "-",
+              "right": "Base"
+            },
+            "alias": "Change",
+            "replaceFields": false
+          }
+        }
+      ]
+    },
+    {
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 24,
+        "h": 3
       },
       "id": 1,
       "options": {
-        "content": "**Scenario:** ${scenario:csv}  \n**Test Type:** ${test_type:csv}  \n**Variant:** ${variant:csv}  \n**Run Profile:** ${run_profile:csv}  \n**Workload Profile:** ${workload_profile:csv}  \n**Base Run:** ${base_run_id}  \n**Candidate Run:** ${candidate_run_id}  \n**Operation:** ${operation:csv}  \nRun selectors look back across the last 30 days of `k6` data. Set the Grafana time range to cover both runs before reading the summary and workload panels. Service metrics still do not carry `test_run_id`, so strict run isolation on the service side still lives in logs and traces.",
+        "content": "**Base** `${base_run_id}` · **Candidate** `${candidate_run_id}`  \nThe table summarizes each whole run. Operation filters the breakdowns. Percentage changes are in percentage points. Set the time range to include both runs for charts, logs, and inspection links.",
         "mode": "markdown"
       },
-      "title": "Comparison Scope",
+      "title": "Comparison scope",
       "type": "text"
     },
     {
@@ -66,902 +178,15 @@
           "color": {
             "mode": "palette-classic"
           },
-          "unit": "reqps"
+          "unit": "percentunit"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
         "x": 0,
-        "y": 4
-      },
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) / clamp_min(max(count_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) * 5, 1)",
-          "instant": true,
-          "legendFormat": "base",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Base Request Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "reqps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 4
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) / clamp_min(max(count_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) * 5, 1)",
-          "instant": true,
-          "legendFormat": "candidate",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Candidate Request Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "reqps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 4
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) / clamp_min(max(count_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) * 5, 1)) - (sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) / clamp_min(max(count_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) * 5, 1))",
-          "instant": true,
-          "legendFormat": "delta",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Delta Request Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 4
-      },
-      "id": 5,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])))",
-          "instant": true,
-          "legendFormat": "base",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Base p95 Latency",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 4
-      },
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])))",
-          "instant": true,
-          "legendFormat": "candidate",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Candidate p95 Latency",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 4
-      },
-      "id": 7,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])))) - (1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d]))))",
-          "instant": true,
-          "legendFormat": "delta",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Delta p95 Latency",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 8
-      },
-      "id": 8,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) > 0)",
-          "instant": true,
-          "legendFormat": "base",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Base Error Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 8
-      },
-      "id": 9,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) > 0)",
-          "instant": true,
-          "legendFormat": "candidate",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Candidate Error Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 8
-      },
-      "id": 10,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) > 0)) - ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) > 0))",
-          "instant": true,
-          "legendFormat": "delta",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Delta Error Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 8
-      },
-      "id": 11,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))",
-          "instant": true,
-          "legendFormat": "base",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Base Avg VUs",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 8
-      },
-      "id": 12,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))",
-          "instant": true,
-          "legendFormat": "candidate",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Candidate Avg VUs",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 8
-      },
-      "id": 13,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))) - (avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))",
-          "instant": true,
-          "legendFormat": "delta",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Delta Avg VUs",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 12
-      },
-      "id": 14,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0)",
-          "instant": true,
-          "legendFormat": "base",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Base Dependency Share",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 12
-      },
-      "id": 15,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0)",
-          "instant": true,
-          "legendFormat": "candidate",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Candidate Dependency Share",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 12
-      },
-      "id": 16,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0)) - ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0))",
-          "instant": true,
-          "legendFormat": "delta",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Delta Dependency Share",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 12
-      },
-      "id": 17,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))))",
-          "instant": true,
-          "legendFormat": "base",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Base Drift Score",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 12
-      },
-      "id": 18,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))",
-          "instant": true,
-          "legendFormat": "candidate",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Candidate Drift Score",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 12
-      },
-      "id": 19,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "(0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))) - (0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))))",
-          "instant": true,
-          "legendFormat": "delta",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Delta Drift Score",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 16
-      },
-      "id": 20,
-      "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true
-      },
-      "targets": [
-        {
-          "expr": "max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))",
-          "instant": true,
-          "legendFormat": "{{operation}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Target Share By Operation",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 16
+        "y": 12,
+        "w": 12,
+        "h": 8
       },
       "id": 21,
       "options": {
@@ -978,13 +203,19 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])))",
+          "expr": "((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0)) or 0 * (max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))))\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0)",
           "instant": true,
-          "legendFormat": "{{operation}}",
+          "legendFormat": "actual {{operation}}",
           "refId": "A"
+        },
+        {
+          "expr": "max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "target {{operation}}",
+          "refId": "B"
         }
       ],
-      "title": "Base Actual Share By Operation",
+      "title": "Base actual and target share",
       "type": "bargauge"
     },
     {
@@ -1002,10 +233,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 16
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
       },
       "id": 22,
       "options": {
@@ -1022,13 +253,19 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])))",
+          "expr": "((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0)) or 0 * (max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range]))))\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0)",
           "instant": true,
-          "legendFormat": "{{operation}}",
+          "legendFormat": "actual {{operation}}",
           "refId": "A"
+        },
+        {
+          "expr": "max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "target {{operation}}",
+          "refId": "B"
         }
       ],
-      "title": "Candidate Actual Share By Operation",
+      "title": "Candidate actual and target share",
       "type": "bargauge"
     },
     {
@@ -1041,7 +278,8 @@
           "color": {
             "mode": "palette-classic"
           },
-          "unit": "percentunit"
+          "unit": "suffix: pp",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -1049,7 +287,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 24
+        "y": 20
       },
       "id": 23,
       "options": {
@@ -1066,7 +304,7 @@
       },
       "targets": [
         {
-          "expr": "(sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))",
+          "expr": "100 * ((((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0)) - (max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))))\n or (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0))\n or -(max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))))\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0)\nand on() max(last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])))",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
@@ -1085,7 +323,8 @@
           "color": {
             "mode": "palette-classic"
           },
-          "unit": "percentunit"
+          "unit": "suffix: pp",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -1093,7 +332,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 24
+        "y": 20
       },
       "id": 24,
       "options": {
@@ -1110,7 +349,7 @@
       },
       "targets": [
         {
-          "expr": "(sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range]))",
+          "expr": "100 * ((((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0)) - (max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range]))))\n or (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0))\n or -(max by (operation) (last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range]))))\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0)\nand on() max(last_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])))",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
@@ -1129,7 +368,8 @@
           "color": {
             "mode": "palette-classic"
           },
-          "unit": "percentunit"
+          "unit": "suffix: pp",
+          "decimals": 2
         },
         "overrides": []
       },
@@ -1137,7 +377,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 24
+        "y": 20
       },
       "id": 25,
       "options": {
@@ -1154,14 +394,15 @@
       },
       "targets": [
         {
-          "expr": "(sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])))) - on(operation) (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range]))))",
+          "expr": "100 * (\n  ((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0)) - (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0)))\n  or (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0))\n  or -(sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0))\n)\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])) > 0)\nand on() (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])) > 0)",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
         }
       ],
       "title": "Candidate Minus Base Share",
-      "type": "bargauge"
+      "type": "bargauge",
+      "description": "Candidate operation share minus base operation share, in percentage points. Each share uses its whole run as the denominator."
     },
     {
       "datasource": {
@@ -1187,7 +428,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 32
+        "y": 28
       },
       "id": 26,
       "options": {
@@ -1235,7 +476,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 32
+        "y": 28
       },
       "id": 27,
       "options": {
@@ -1283,7 +524,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 40
+        "y": 36
       },
       "id": 28,
       "options": {
@@ -1331,7 +572,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 40
+        "y": 36
       },
       "id": 29,
       "options": {
@@ -1360,11 +601,11 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 44
       },
       "id": 30,
       "options": {
-        "content": "**Run Timelines:** these panels are shown side by side rather than overlaid because repeated runs usually happen at different absolute timestamps.  \n**Service-Side Drilldown:** use the run-filtered logs below to inspect API and dependency behavior for one run at a time; those logs carry `test_run_id` and link into traces via `trace_id`.",
+        "content": "Set the time range to cover both runs. The timelines show when each run generated traffic. **Inspect base** and **Inspect candidate** open the same interval in Root Cause Drilldown with the corresponding log run ID. Expand an API or dependency log entry to open its trace.",
         "mode": "markdown"
       },
       "title": "Comparison Notes",
@@ -1379,7 +620,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 52
+        "y": 48
       },
       "id": 31,
       "options": {
@@ -1410,7 +651,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 52
+        "y": 48
       },
       "id": 32,
       "options": {

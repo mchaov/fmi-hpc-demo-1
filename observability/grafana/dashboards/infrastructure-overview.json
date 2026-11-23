@@ -94,7 +94,8 @@
         }
       ],
       "title": "Host CPU Busy",
-      "type": "stat"
+      "type": "stat",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -156,7 +157,8 @@
         }
       ],
       "title": "Host Memory Used",
-      "type": "stat"
+      "type": "stat",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -218,7 +220,8 @@
         }
       ],
       "title": "Docker Data Filesystem Used",
-      "type": "stat"
+      "type": "stat",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -262,7 +265,8 @@
         }
       ],
       "title": "Host Load (1m)",
-      "type": "stat"
+      "type": "stat",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -310,7 +314,8 @@
         }
       ],
       "title": "Host CPU Mode Split",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -363,7 +368,8 @@
         }
       ],
       "title": "Host Memory Availability",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -420,7 +426,8 @@
         }
       ],
       "title": "Host Load Averages",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -473,7 +480,8 @@
         }
       ],
       "title": "Host Disk Throughput",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -526,7 +534,8 @@
         }
       ],
       "title": "Host Disk IOPS",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -579,7 +588,8 @@
         }
       ],
       "title": "Host Network Throughput",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Whole host during the displayed interval."
     },
     {
       "datasource": {
@@ -804,106 +814,6 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(k6_http_reqs_total{scenario!=\"default\"}, scenario)",
-        "includeAll": true,
-        "label": "Scenario",
-        "multi": true,
-        "name": "scenario",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario!=\"default\"}, scenario)",
-          "refId": "PrometheusVariableQueryEditor-Scenario"
-        },
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\"}, test_type)",
-        "includeAll": true,
-        "label": "Test Type",
-        "multi": true,
-        "name": "test_type",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\"}, test_type)",
-          "refId": "PrometheusVariableQueryEditor-TestType"
-        },
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, variant)",
-        "includeAll": true,
-        "label": "Variant",
-        "multi": true,
-        "name": "variant",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, variant)",
-          "refId": "PrometheusVariableQueryEditor-Variant"
-        },
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, run_profile)",
-        "includeAll": true,
-        "label": "Run Profile",
-        "multi": true,
-        "name": "run_profile",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\"}, run_profile)",
-          "refId": "PrometheusVariableQueryEditor-RunProfile"
-        },
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
         "definition": "label_values(container_memory_working_set_bytes{job=\"docker-metrics\",compose_project!=\"\"}, compose_project)",
         "includeAll": true,
         "label": "Compose Project",
@@ -952,5 +862,6 @@
   },
   "title": "Infrastructure Overview",
   "uid": "infrastructure-overview",
-  "version": 3
+  "version": 3,
+  "description": "Host charts cover the whole host. Compose project and service filter the container charts."
 }

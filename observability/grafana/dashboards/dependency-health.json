@@ -20,17 +20,17 @@
   "panels": [
     {
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 0
       },
       "id": 15,
       "options": {
-        "content": "**Workload Profile:** ${workload_profile:csv}  \n**Test Run ID:** ${test_run_id:csv}  \n**Operation:** ${operation:csv}  \n**API Route:** ${route:csv}  \n**API Mode:** ${mode:csv}  \nDependency panels are keyed by `operation`. API overlay panels focus on `/api/report` in `dependency` and `degraded` mode so the outbound slice lines up with the user-visible symptom.",
+        "content": "Operation filters outbound calls. Mode filters the API overlay for dependency-backed reports. The whole-API share and downstream service health cover the full interval.",
         "mode": "markdown"
       },
-      "title": "Selected Filters",
+      "title": "All API traffic in this interval",
       "type": "text"
     },
     {
@@ -121,13 +121,14 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(dependency_requests_total{service=\"demo-api\",operation=~\"$operation\"}[$__rate_interval])) / clamp_min(sum(rate(http_requests_total{service=\"demo-api\",route=~\"$route\",mode=~\"$mode\",route!~\"/(metrics|health)\"}[$__rate_interval])), 0.0001)",
+          "expr": "(sum(rate(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"dependency|degraded\"}[$__rate_interval])) or 0 * sum(rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}[$__rate_interval])))\n/ (sum(rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}[$__rate_interval])) > 0)",
           "legendFormat": "dependency share",
           "refId": "A"
         }
       ],
-      "title": "Dependency Calls as Share of API Traffic",
-      "type": "timeseries"
+      "title": "Dependency-backed share of all API requests",
+      "type": "timeseries",
+      "description": "Completed dependency and degraded report requests divided by all completed API requests, excluding health checks and metrics scrapes. This panel covers all routes and modes."
     },
     {
       "datasource": {
@@ -222,12 +223,12 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (rate(dependency_errors_total{service=\"demo-api\",operation=~\"$operation\"}[$__rate_interval])) / clamp_min(sum by (operation) (rate(dependency_requests_total{service=\"demo-api\",operation=~\"$operation\"}[$__rate_interval])), 0.0001)",
+          "expr": "(sum by (operation) (rate(dependency_errors_total{service=\"demo-api\",operation=~\"$operation\"}[$__rate_interval]))\n or 0 * sum by (operation) (rate(dependency_requests_total{service=\"demo-api\",operation=~\"$operation\"}[$__rate_interval])))\n/ (sum by (operation) (rate(dependency_requests_total{service=\"demo-api\",operation=~\"$operation\"}[$__rate_interval])) > 0)",
           "legendFormat": "dependency {{operation}}",
           "refId": "A"
         },
         {
-          "expr": "sum by (mode) (rate(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"$mode\",mode=~\"dependency|degraded\",status_code=~\"5..\"}[$__rate_interval])) / clamp_min(sum by (mode) (rate(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"$mode\",mode=~\"dependency|degraded\"}[$__rate_interval])), 0.0001)",
+          "expr": "(sum by (mode) (rate(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"$mode\",mode=~\"dependency|degraded\",status_code=~\"5..\"}[$__rate_interval]))\n or 0 * sum by (mode) (rate(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"$mode\",mode=~\"dependency|degraded\"}[$__rate_interval])))\n/ (sum by (mode) (rate(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"$mode\",mode=~\"dependency|degraded\"}[$__rate_interval])) > 0)",
           "legendFormat": "api {{mode}}",
           "refId": "B"
         }
@@ -301,11 +302,34 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "lineWidth": 2,
-            "showPoints": "never"
+            "showPoints": "never",
+            "axisPlacement": "left",
+            "axisLabel": "p95 latency"
           },
           "unit": "ms"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dependency 5xx rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "5xx rate"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -332,7 +356,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum(rate(http_requests_total{service=\"demo-dependency\",route=\"/work\",status_code=~\"5..\"}[$__rate_interval])) / clamp_min(sum(rate(http_requests_total{service=\"demo-dependency\",route=\"/work\"}[$__rate_interval])), 0.0001)",
+          "expr": "(sum(rate(http_requests_total{service=\"demo-dependency\",route=\"/work\",status_code=~\"5..\"}[$__rate_interval]))\n or 0 * sum(rate(http_requests_total{service=\"demo-dependency\",route=\"/work\"}[$__rate_interval])))\n/ (sum(rate(http_requests_total{service=\"demo-dependency\",route=\"/work\"}[$__rate_interval])) > 0)",
           "legendFormat": "dependency 5xx rate",
           "refId": "B"
         }
@@ -360,57 +384,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(k6_http_reqs_total{scenario!=\"default\"}, workload_profile)",
-        "includeAll": true,
-        "label": "Workload Profile",
-        "multi": true,
-        "name": "workload_profile",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario!=\"default\"}, workload_profile)",
-          "refId": "PrometheusVariableQueryEditor-WorkloadProfile"
-        },
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(k6_http_reqs_total{scenario!=\"default\",workload_profile=~\"$workload_profile\"}, test_run_id)",
-        "includeAll": true,
-        "label": "Test Run ID",
-        "multi": true,
-        "name": "test_run_id",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario!=\"default\",workload_profile=~\"$workload_profile\"}, test_run_id)",
-          "refId": "PrometheusVariableQueryEditor-TestRunId"
-        },
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(k6_http_reqs_total{scenario!=\"default\",workload_profile=~\"$workload_profile\",test_run_id=~\"$test_run_id\"}, operation)",
+        "definition": "label_values(dependency_requests_total{service=\"demo-api\"}, operation)",
         "includeAll": true,
         "label": "Operation",
         "multi": true,
@@ -418,7 +392,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(k6_http_reqs_total{scenario!=\"default\",workload_profile=~\"$workload_profile\",test_run_id=~\"$test_run_id\"}, operation)",
+          "query": "label_values(dependency_requests_total{service=\"demo-api\"}, operation)",
           "refId": "PrometheusVariableQueryEditor-Operation"
         },
         "refresh": 2,
@@ -435,32 +409,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}, route)",
-        "includeAll": true,
-        "label": "API Route",
-        "multi": true,
-        "name": "route",
-        "options": [],
-        "query": {
-          "qryType": 1,
-          "query": "label_values(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}, route)",
-          "refId": "PrometheusVariableQueryEditor-Route"
-        },
-        "refresh": 2,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
-        "definition": "label_values(http_requests_total{service=\"demo-api\",route=~\"$route\",route!~\"/(metrics|health)\"}, mode)",
+        "definition": "label_values(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"dependency|degraded\"}, mode)",
         "includeAll": true,
         "label": "API Mode",
         "multi": true,
@@ -468,7 +417,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(http_requests_total{service=\"demo-api\",route=~\"$route\",route!~\"/(metrics|health)\"}, mode)",
+          "query": "label_values(http_requests_total{service=\"demo-api\",route=\"/api/report\",mode=~\"dependency|degraded\"}, mode)",
           "refId": "PrometheusVariableQueryEditor-Mode"
         },
         "refresh": 2,

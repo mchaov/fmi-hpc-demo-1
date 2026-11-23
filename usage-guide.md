@@ -101,17 +101,16 @@ After running `baseline.js`, open:
 - `Infrastructure Overview`
 - `Load Test Correlation`
 
-In `Load Test Correlation`, start with the `Workload Mix` row:
+In `Load Test Correlation`, select a run and open the `Workload Mix` row. k6 operation shares use all requests from the selected runs. API route and mode shares use all completed API requests in the interval, excluding health checks and metrics scrapes. Filtering a series keeps its denominator fixed. Target and drift need one selected run with a published workload target. Multi-run timelines remain available. **Peak VUs in one run** is the largest individual run sample in the interval. Expand **Run metadata** for scenario and profile details.
 
-- compare `k6 Request Share By Operation` with `API Request Share By Route` and `API Request Share By Mode`
-- use `Target vs Actual Share By Operation` and `Workload Mix Drift By Operation` to spot execution drift quickly
+| Dashboard | How to read it |
+|---|---|
+| Run Comparison | Choose base and candidate IDs and a time range covering both runs. The table uses the last reported cumulative request counts for each run and shows candidate minus base. Changes to percentage rows are in percentage points. An em dash marks a missing measurement. The operation selector applies to the breakdowns below the table. |
+| Endpoint Comparison | Route shares use all non-probe API requests. Mode shares use all `/api/report` requests. Both describe traffic from every run in the interval. |
+| Dependency Health | The whole-API share counts completed dependency and degraded reports, including failed requests, as a fraction of all non-probe API requests. The operation and mode controls filter the labeled breakdowns. |
+| Infrastructure Overview | Host charts cover the whole host. Compose project and service select containers. |
 
-Then use:
-
-- `Run Comparison` to compare two selected `test_run_id` values directly
-- `Endpoint Comparison` for side-by-side route and `/api/report` mode behavior
-- `Dependency Health` for dependency share, latency, error overlays, and outcome split
-- Grafana logs and traces for drilldown, filtering by `test_run_id` when you need to isolate one run
+From **Run Comparison**, choose **Inspect base** or **Inspect candidate**. **Root Cause Drilldown** opens the same time range. Its service graphs show interval-wide traffic, and its API and dependency logs use the chosen run ID. Expand a log entry with a trace ID and choose **Tempo** to see that request’s spans. A healthy service with observed traffic shows 0% errors. An idle or missing group has no error-rate measurement.
 
 ## Suggested Usage Flow During A Lesson
 
@@ -126,7 +125,7 @@ Then use:
 9. Run a contrasting scenario such as `spike.js`, `stress.js`, `soak.js`, or `breakpoint.js`.
 10. Run `degraded.js`.
 11. Repeat the route/mode and dependency comparison on the degraded run.
-12. Use Loki and Tempo from Grafana to move from symptoms to individual requests and traces, filtering by `test_run_id` when you need to isolate one run.
+12. In `Run Comparison`, choose **Inspect candidate**, expand a dependency log, and follow its **Tempo** link to the request trace.
 
 ## Stop And Reset
 

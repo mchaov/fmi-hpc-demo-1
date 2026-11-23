@@ -178,7 +178,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\",status_code=~\"5..\"}[1m])) / clamp_min(sum(rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}[1m])), 0.0001)",
+          "expr": "(sum(rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\",status_code=~\"5..\"}[1m]))\n or 0 * sum(rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}[1m])))\n/ (sum(rate(http_requests_total{service=\"demo-api\",route!~\"/(metrics|health)\"}[1m])) > 0)",
           "legendFormat": "error rate",
           "refId": "A"
         }
@@ -200,11 +200,34 @@
             "drawStyle": "line",
             "fillOpacity": 10,
             "lineWidth": 2,
-            "showPoints": "never"
+            "showPoints": "never",
+            "axisPlacement": "left",
+            "axisLabel": "Resident memory"
           },
           "unit": "bytes"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event loop lag"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Event loop lag"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -231,7 +254,7 @@
           "refId": "A"
         },
         {
-          "expr": "nodejs_eventloop_lag_seconds{service=\"demo-api\"}",
+          "expr": "1000 * nodejs_eventloop_lag_seconds{service=\"demo-api\"}",
           "legendFormat": "event loop lag",
           "refId": "B"
         }
