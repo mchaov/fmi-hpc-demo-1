@@ -3,7 +3,7 @@
 const { diag, DiagConsoleLogger, DiagLogLevel, trace } = require('@opentelemetry/api');
 const { NodeSDK } = require('@opentelemetry/sdk-node');
 const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http');
-const { AlwaysOnSampler } = require('@opentelemetry/sdk-trace-base');
+const { AlwaysOnSampler } = require('@opentelemetry/sdk-trace');
 
 let sdk;
 

@@ -1,7 +1,5 @@
 'use strict';
 
-const http = require('node:http');
-const https = require('node:https');
 const { URL } = require('node:url');
 const { randomUUID } = require('node:crypto');
 
@@ -17,6 +15,7 @@ const SERVICE_NAME = process.env.SERVICE_NAME || 'demo-api';
 const DEPENDENCY_URL = process.env.DEPENDENCY_URL || 'http://dependency:8080';
 
 const SEARCH_DATASET = buildDataset();
+const REPORT_MODES = new Set(['fast', 'slow', 'dependency', 'degraded', 'error']);
 
 function buildDataset() {
   const subjects = ['distributed', 'parallel', 'observability', 'latency', 'throughput', 'jitter', 'capacity', 'benchmark'];
@@ -52,7 +51,8 @@ function getModeLabel(request) {
   const route = getRouteLabel(request);
 
   if (route === '/api/report') {
-    return request.query?.mode || 'report';
+    const mode = String(request.query?.mode || 'fast').toLowerCase();
+    return REPORT_MODES.has(mode) ? mode : 'unsupported';
   }
 
   if (route === '/api/search') {
@@ -79,57 +79,19 @@ function getTestRunId(request) {
   return typeof headerValue === 'string' && headerValue.trim() ? headerValue.trim() : null;
 }
 
-function requestJson(urlString, timeoutMs = 3000, headers = {}) {
-  const url = new URL(urlString);
-  const transport = url.protocol === 'https:' ? https : http;
-
-  return new Promise((resolve, reject) => {
-    const request = transport.request(
-      {
-        hostname: url.hostname,
-        port: url.port || (url.protocol === 'https:' ? 443 : 80),
-        path: `${url.pathname}${url.search}`,
-        method: 'GET',
-        timeout: timeoutMs,
-        headers
-      },
-      (response) => {
-        let body = '';
-
-        response.setEncoding('utf8');
-        response.on('data', (chunk) => {
-          body += chunk;
-        });
-        response.on('end', () => {
-          let parsed = null;
-
-          if (body) {
-            try {
-              parsed = JSON.parse(body);
-            } catch (error) {
-              reject(new Error(`Dependency returned invalid JSON: ${error.message}`));
-              return;
-            }
-          }
-
-          resolve({
-            statusCode: response.statusCode || 500,
-            body: parsed
-          });
-        });
-      }
-    );
-
-    request.on('timeout', () => {
-      request.destroy(new Error(`Dependency request timed out after ${timeoutMs}ms`));
-    });
-
-    request.on('error', (error) => {
-      reject(error);
-    });
-
-    request.end();
-  });
+async function requestJson(url, timeoutMs, headers) {
+  const deadline = AbortSignal.timeout(timeoutMs);
+  try {
+    const response = await fetch(url, { headers, signal: deadline, redirect: 'manual' });
+    const body = await response.text();
+    return { statusCode: response.status, body: body ? JSON.parse(body) : null };
+  } catch (cause) {
+    const error = new Error(deadline.aborted
+      ? `Dependency request timed out after ${timeoutMs}ms`
+      : 'Dependency response could not be read.', { cause });
+    error.statusCode = deadline.aborted ? 504 : 502;
+    throw error;
+  }
 }
 
 async function withServerSpan({ request, tracer, spanName, handler }) {
@@ -289,7 +251,7 @@ function createApp() {
       tracer,
       spanName: 'GET /api/items/:id',
       handler: async () => {
-        const itemId = Number.parseInt(request.params.id, 10);
+        const itemId = /^\d+$/.test(request.params.id) ? Number(request.params.id) : NaN;
         const item = SEARCH_DATASET.find((candidate) => candidate.id === itemId);
 
         if (!item) {
@@ -360,7 +322,7 @@ function createApp() {
       tracer,
       spanName: 'GET /api/report',
       handler: async () => {
-        const mode = `${request.query?.mode || 'fast'}`.toLowerCase();
+        const mode = request.modeLabel;
 
         if (mode === 'fast') {
           return {
@@ -415,11 +377,11 @@ function createApp() {
           };
         }
 
-        request.responseError = { message: `Unsupported mode: ${mode}` };
+        request.responseError = { message: `Unsupported mode: ${request.query.mode}` };
         reply.code(400);
         return {
           request_id: request.id,
-          error: `Unsupported mode: ${mode}`
+          error: request.responseError.message
         };
       }
     });

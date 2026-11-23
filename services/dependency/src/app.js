@@ -198,10 +198,12 @@ function createApp() {
       tracer,
       spanName: 'GET /work',
       handler: async () => {
-        const delayMs = Number.parseInt(request.query?.delayMs || '0', 10);
-        const failRate = Number.parseFloat(request.query?.failRate || '0');
+        const rawDelay = request.query?.delayMs ?? '0';
+        const rawRate = request.query?.failRate ?? '0';
+        const delayMs = Number(rawDelay);
+        const failRate = Number(rawRate);
 
-        if (!Number.isFinite(delayMs) || delayMs < 0) {
+        if (typeof rawDelay !== 'string' || !/^\d+$/.test(rawDelay) || delayMs > 2147483647) {
           request.responseError = { message: 'delayMs must be a non-negative integer.' };
           reply.code(400);
           return {
@@ -210,7 +212,8 @@ function createApp() {
           };
         }
 
-        if (!Number.isFinite(failRate) || failRate < 0 || failRate > 1) {
+        if (typeof rawRate !== 'string' || !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(rawRate)
+          || !Number.isFinite(failRate) || failRate < 0 || failRate > 1) {
           request.responseError = { message: 'failRate must be between 0 and 1.' };
           reply.code(400);
           return {
