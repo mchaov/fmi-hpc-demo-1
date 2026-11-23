@@ -234,7 +234,7 @@
       },
       "targets": [
         {
-          "expr": "1000 * avg(avg_over_time(k6_http_req_duration_p95{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d]))",
+          "expr": "1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])))",
           "instant": true,
           "legendFormat": "base",
           "range": false,
@@ -281,7 +281,7 @@
       },
       "targets": [
         {
-          "expr": "1000 * avg(avg_over_time(k6_http_req_duration_p95{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d]))",
+          "expr": "1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])))",
           "instant": true,
           "legendFormat": "candidate",
           "range": false,
@@ -328,7 +328,7 @@
       },
       "targets": [
         {
-          "expr": "1000 * ((avg(avg_over_time(k6_http_req_duration_p95{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d]))) - (avg(avg_over_time(k6_http_req_duration_p95{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d]))))",
+          "expr": "(1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])))) - (1000 * histogram_quantile(0.95, sum(last_over_time(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d]))))",
           "instant": true,
           "legendFormat": "delta",
           "range": false,
@@ -375,7 +375,7 @@
       },
       "targets": [
         {
-          "expr": "avg(avg_over_time(k6_http_req_failed_rate{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d]))",
+          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) > 0)",
           "instant": true,
           "legendFormat": "base",
           "range": false,
@@ -422,7 +422,7 @@
       },
       "targets": [
         {
-          "expr": "avg(avg_over_time(k6_http_req_failed_rate{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d]))",
+          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) > 0)",
           "instant": true,
           "legendFormat": "candidate",
           "range": false,
@@ -469,7 +469,7 @@
       },
       "targets": [
         {
-          "expr": "(avg(avg_over_time(k6_http_req_failed_rate{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d]))) - (avg(avg_over_time(k6_http_req_failed_rate{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])))",
+          "expr": "((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[30d])) > 0)) - ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\",expected_response=\"false\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[30d])) > 0))",
           "instant": true,
           "legendFormat": "delta",
           "range": false,
@@ -515,7 +515,7 @@
       },
       "targets": [
         {
-          "expr": "avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])",
+          "expr": "avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))",
           "instant": true,
           "legendFormat": "base",
           "range": false,
@@ -561,7 +561,7 @@
       },
       "targets": [
         {
-          "expr": "avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])",
+          "expr": "avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))",
           "instant": true,
           "legendFormat": "candidate",
           "range": false,
@@ -607,7 +607,7 @@
       },
       "targets": [
         {
-          "expr": "avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]) - avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])",
+          "expr": "(avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))) - (avg(avg_over_time(k6_vus{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))",
           "instant": true,
           "legendFormat": "delta",
           "range": false,
@@ -654,7 +654,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=\"dependency\"}[30d])) / clamp_min(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])), 1)",
+          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0)",
           "instant": true,
           "legendFormat": "base",
           "range": false,
@@ -701,7 +701,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=\"dependency\"}[30d])) / clamp_min(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])), 1)",
+          "expr": "(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0)",
           "instant": true,
           "legendFormat": "candidate",
           "range": false,
@@ -748,7 +748,7 @@
       },
       "targets": [
         {
-          "expr": "(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=\"dependency\"}[30d])) / clamp_min(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])), 1)) - (sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=\"dependency\"}[30d])) / clamp_min(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])), 1))",
+          "expr": "((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) > 0)) - ((sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"dependency|degraded\"}[30d])) or vector(0)) / (sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) > 0))",
           "instant": true,
           "legendFormat": "delta",
           "range": false,
@@ -795,7 +795,7 @@
       },
       "targets": [
         {
-          "expr": "0.5 * sum(abs((sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))))",
+          "expr": "0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d]))))",
           "instant": true,
           "legendFormat": "base",
           "range": false,
@@ -842,7 +842,7 @@
       },
       "targets": [
         {
-          "expr": "0.5 * sum(abs((sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))",
+          "expr": "0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))",
           "instant": true,
           "legendFormat": "candidate",
           "range": false,
@@ -889,7 +889,7 @@
       },
       "targets": [
         {
-          "expr": "(0.5 * sum(abs((sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))) - (0.5 * sum(abs((sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))))",
+          "expr": "(0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[30d]))))) - (0.5 * sum(abs((sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[30d])))))",
           "instant": true,
           "legendFormat": "delta",
           "range": false,
@@ -978,7 +978,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])))",
+          "expr": "sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])))",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
@@ -1022,7 +1022,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])))",
+          "expr": "sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])))",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
@@ -1066,7 +1066,7 @@
       },
       "targets": [
         {
-          "expr": "(sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))",
+          "expr": "(sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
@@ -1110,7 +1110,7 @@
       },
       "targets": [
         {
-          "expr": "(sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range]))",
+          "expr": "(sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])))) - on(operation) max by (operation) (max_over_time(k6_workload_target_share{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range]))",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
@@ -1154,7 +1154,7 @@
       },
       "targets": [
         {
-          "expr": "(sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])))) - on(operation) (sum by (operation) (increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(increase(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range]))))",
+          "expr": "(sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\"}[$__range])))) - on(operation) (sum by (operation) (last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__range])) / scalar(sum(last_over_time(k6_http_reqs_total{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\"}[$__range]))))",
           "instant": true,
           "legendFormat": "{{operation}}",
           "refId": "A"
@@ -1299,7 +1299,7 @@
       },
       "targets": [
         {
-          "expr": "k6_http_req_duration_p95{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}",
+          "expr": "1000 * histogram_quantile(0.95, sum by (operation) (rate(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$base_run_id\",operation=~\"$operation\"}[$__rate_interval])))",
           "legendFormat": "{{operation}}",
           "refId": "A"
         }
@@ -1347,7 +1347,7 @@
       },
       "targets": [
         {
-          "expr": "k6_http_req_duration_p95{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}",
+          "expr": "1000 * histogram_quantile(0.95, sum by (operation) (rate(k6_http_req_duration_seconds{scenario=~\"$scenario\",test_type=~\"$test_type\",variant=~\"$variant\",run_profile=~\"$run_profile\",workload_profile=~\"$workload_profile\",test_run_id=\"$candidate_run_id\",operation=~\"$operation\"}[$__rate_interval])))",
           "legendFormat": "{{operation}}",
           "refId": "A"
         }

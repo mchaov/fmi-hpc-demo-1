@@ -533,7 +533,8 @@ At image build time they are copied into `/etc/grafana/...`, not into the persis
 ## Known Limits And Current Gaps
 
 - Tempo is available to Grafana inside the compose network, but not exposed on a host port.
-- The repository does not currently include a formal unit/integration test suite for the Node services; validation is primarily done through compose health checks and `k6` scenarios.
+- After installing each service's locked dependencies with `npm ci`, run `node --test services/api/test/app.test.js services/dependency/test/app.test.js` from the repository root to check request validation and downstream failure handling.
+- With the lab running, `node --test tests/*.test.mjs` checks breakpoint results and evaluates the dashboard queries against deterministic samples using Prometheus's bundled `promtool`.
 
 ## Quick Summary
 
