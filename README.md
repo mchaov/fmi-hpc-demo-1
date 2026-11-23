@@ -41,16 +41,21 @@ curl http://localhost:3000/api/health
 
 Open the main interfaces:
 
+- [Test runner](http://localhost:5665) to start a scenario and watch k6
+- [Grafana](http://localhost:3000) to explore metrics, logs, and traces
 - API health: `http://localhost:8080/health`
 - API metrics: `http://localhost:8080/metrics`
 - Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000`
 
 Grafana is configured for anonymous access for classroom use.
 
 ## Quick Validation
 
-Run the smoke scenario:
+In the test runner, leave **Smoke** selected and choose **Start test**. Five iterations make ten HTTP requests. The final **PASS** includes a Prometheus ingestion check.
+
+Next, start **Baseline** and choose **Open in Grafana**. The runner shows live k6 charts and the lecture summary. The second tab opens **Load Test Correlation** with this run selected.
+
+For a terminal smoke test, use the existing CLI:
 
 ```bash
 docker compose --profile loadtest run --rm k6
@@ -107,7 +112,7 @@ After running `baseline.js`, open:
 
 In `Load Test Correlation`, start with the `Workload Mix` row:
 
-- compare `k6 Request Share By Operation` with `API Request Share By Route` and `API Request Share By Mode`
+- compare `k6 Request Share By Operation` with `Route share of all API requests` and `Mode share of all API requests`
 - use `Target vs Actual Share By Operation` and `Workload Mix Drift By Operation` to spot execution drift quickly
 
 Then use:

@@ -39,6 +39,7 @@ At a high level, the repository contains four things:
 ### Load testing
 
 - [`k6`](./k6): `k6` scenarios and shared helpers
+- [Browser test runner](./k6/runner) serves the classroom controls and embeds the native k6 dashboard.
 
 ### Observability
 
@@ -53,6 +54,9 @@ At a high level, the repository contains four things:
 The runtime shape is:
 
 ```text
+Browser runner or CLI
+ |
+ v
 k6 ---> demo-api ---> demo-dependency
  |        |   |             |
  |        |   |             +--> logs -> Promtail -> Loki -> Grafana
@@ -119,7 +123,7 @@ It also accepts remote-write traffic from `k6`, which is how load-test metrics a
 
 ### Grafana
 
-Grafana is the main user interface for the lab.
+Grafana is the observability interface. Open the test runner in a separate tab to control classroom workloads.
 
 It is provisioned with:
 
@@ -181,6 +185,14 @@ docker compose --profile loadtest run --rm k6
 
 The default command runs the smoke scenario. Other scenarios are started explicitly.
 
+### Browser test runner
+
+The default Compose service `k6-runner` publishes `127.0.0.1:5665` and runs a Node HTTP server on container port 8080. Its image contains the k6 binary and the same baked scripts as the CLI. The server inspects the selected script with its course settings, assigns a test run ID, and launches the existing shell wrapper as a child process. The browser uses a static page with the native k6 charts embedded below the controls.
+
+Within the runner container, k6 serves its dashboard on loopback port 5665 and its status API on loopback port 6565. The launcher proxies the dashboard and polls execution status. At workload completion it releases event streams for every viewer so k6 can flush its outputs. The wrapper exit determines the final outcome, including the smoke readback. Stop and container shutdown signal the run's process group.
+
+The latest lecture summary lives in memory and the latest native HTML report in temporary storage. A new run replaces them. Prometheus, Loki, and Tempo retain the historical telemetry according to their own settings.
+
 ## How The Setup Is Created
 
 ## Docker Compose As The Top-Level Orchestrator
@@ -209,6 +221,7 @@ These services are built from repository source:
 - `promtail`
 - `tempo`
 - `k6`
+- `k6-runner`
 
 ### Which services use upstream base images
 
@@ -220,7 +233,7 @@ The local Dockerfiles are thin wrappers around upstream images:
 - `grafana/loki:latest` for Loki
 - `grafana/promtail:latest` for Promtail
 - `grafana/tempo:2.6.0` for Tempo
-- `grafana/k6:latest` for `k6`
+- `grafana/k6:2.4.0` for the CLI and the shared k6 binary in the Node 22 Alpine runner image
 
 ### Why several configs are baked into images
 
@@ -534,7 +547,7 @@ At image build time they are copied into `/etc/grafana/...`, not into the persis
 
 - Tempo is available to Grafana inside the compose network, but not exposed on a host port.
 - After installing each service's locked dependencies with `npm ci`, run `node --test services/api/test/app.test.js services/dependency/test/app.test.js` from the repository root to check request validation and downstream failure handling.
-- With the lab running, `node --test tests/*.test.mjs` checks breakpoint results and evaluates the dashboard queries against deterministic samples using Prometheus's bundled `promtool`.
+- With the lab running, `node --test tests/*.test.mjs` checks breakpoint results, dashboard queries, and the browser runner. The runner lifecycle test uses a separate temporary Compose container with loopback fixture services. It can exercise a failed smoke readback while the classroom runner stays available.
 
 ## Quick Summary
 

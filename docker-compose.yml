@@ -160,7 +160,7 @@ services:
     container_name: university-hpc-k6
     profiles:
       - loadtest
-    environment:
+    environment: &k6-environment
       BASE_URL: "http://api:8080"
       K6_OUT: "experimental-prometheus-rw"
       K6_PROMETHEUS_RW_SERVER_URL: "http://prometheus:9090/api/v1/write"
@@ -171,6 +171,20 @@ services:
       - prometheus
     entrypoint: ["/bin/sh", "/scripts/run.sh"]
     command: ["run", "/scripts/smoke.js"]
+
+  k6-runner:
+    build:
+      context: ./k6
+      target: runner
+    init: true
+    environment: *k6-environment
+    ports:
+      - "127.0.0.1:5665:8080"
+    tmpfs:
+      - /tmp
+    depends_on:
+      - api
+      - prometheus
 
 volumes:
   grafana-data:

@@ -14,7 +14,7 @@ docker compose up --build -d
 
 This builds local images and starts the main lab stack.
 
-After updating the load-test scripts in an existing checkout, rebuild their on-demand image with `docker compose --profile loadtest build k6`.
+After changing a load-test script, run `docker compose up --build -d k6-runner` for the browser and `docker compose --profile loadtest build k6` for the CLI.
 
 ## Check The Stack
 
@@ -30,6 +30,7 @@ curl http://localhost:3000/api/health
 
 ## Open The UIs
 
+- [Test runner](http://localhost:5665) starts with the Compose stack and listens on the local computer.
 - API health: `http://localhost:8080/health`
 - API metrics: `http://localhost:8080/metrics`
 - Prometheus: `http://localhost:9090`
@@ -38,6 +39,10 @@ curl http://localhost:3000/api/health
 Grafana dashboards are under the `HPC Demo` folder. Anyone who can reach the published Grafana port has anonymous organization-admin access, including dashboard editing.
 
 ## Run The Smoke Test
+
+Open the runner, select **Smoke**, and choose **Start test**. After five iterations the lecture summary should show ten requests. Wait for **Smoke result: PASS** before starting the lesson. Smoke often finishes before the native dashboard can produce a chart.
+
+The equivalent CLI command is:
 
 ```bash
 docker compose --profile loadtest run --rm k6
@@ -53,6 +58,22 @@ This validates:
 The final `Smoke result` includes a Prometheus readback after k6 flushes its metrics. It waits up to 15 seconds for a request sample unique to this invocation, even when you reuse a test run ID.
 
 ## Run The Teaching Scenarios
+
+In the runner, choose a scenario to preview its executor, workload, maximum VUs, and thresholds. **Start test** runs that configuration. The runner accepts one browser-launched test at a time. Refresh the page to rejoin it or use **Stop test** to end it.
+
+| Scenario | Browser settings |
+|---|---|
+| Isolation | Choose fast, search, or dependency. |
+| Soak | Enter a k6 duration such as `20m` or `30m`. |
+| Breakpoint | Set the step duration and maximum VUs. The browser supports 1–500 VUs and defaults to 90-second steps up to 120 VUs. |
+
+For a two-tab demonstration, start **Baseline** and choose **Open in Grafana**. Watch **Active VUs**, elapsed time, and estimated time left in the runner. Ramping scenarios also show the stage number and target VUs. The countdown covers scheduled load. In-flight requests and the final metric flush can take additional time. Smoke displays iteration progress.
+
+The native k6 dashboard groups client measurements into short intervals (two seconds for the standard scenarios). Its final lecture summary covers the full run. Compare its HTTP duration with the rolling API p95 in Grafana. The Grafana panel uses a server-side histogram and includes other API traffic in the interval. The Grafana link preselects the k6 run ID and includes surrounding scrape time. Clicking it again reuses the second tab.
+
+After completion, the runner shows **PASS**, **FAIL**, **OBSERVE**, or **STOPPED**, the lecture summary, and the native report when available. The latest result survives a page refresh and is replaced by the next run. Restarting the runner clears it. Use Grafana for historical comparisons.
+
+All scenarios are also available from the CLI:
 
 ```bash
 docker compose --profile loadtest run --rm k6 run /scripts/baseline.js

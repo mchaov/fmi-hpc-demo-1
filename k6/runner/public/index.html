@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test runner · Performance lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="mast"><div class="wrap top">
+    <span class="brand"><b class="mark">k6</b> Performance lab</span>
+    <a id="grafana" target="performance-lab-grafana" href="http://localhost:3000/d/load-test-correlation/load-test-correlation">Open in Grafana <span aria-hidden="true">↗</span></a>
+  </div></header>
+  <main class="wrap">
+    <div class="heading"><h1>Test runner</h1><span id="status" role="status">Connecting</span></div>
+    <form id="configuration">
+      <label for="scenario">Scenario</label>
+      <div class="command">
+        <select id="scenario" name="scenario" required disabled></select>
+        <button id="start" type="submit" disabled>Start test</button>
+      </div>
+      <p id="description"></p>
+      <div id="settings"></div>
+    </form>
+    <p id="error" role="alert" hidden></p>
+    <p id="connection" role="status" hidden></p>
+
+    <section id="progress" hidden aria-labelledby="run-heading">
+      <div class="section-heading"><h2 id="run-heading">Run progress</h2><code id="run-id"></code><button id="stop" type="button" hidden>Stop test</button></div>
+      <dl class="facts progress-facts">
+        <div><dt>Phase</dt><dd id="phase"></dd></div>
+        <div><dt>Active VUs</dt><dd id="vus"></dd></div>
+        <div><dt>Elapsed</dt><dd id="elapsed"></dd></div>
+        <div><dt id="remaining-label">Est. remaining</dt><dd id="remaining"></dd></div>
+      </dl>
+      <progress id="bar" aria-label="Workload progress"></progress>
+    </section>
+
+    <details id="details" open>
+      <summary>Test details</summary>
+      <dl class="facts">
+        <div><dt>Executor</dt><dd id="executor">—</dd></div>
+        <div><dt>Workload</dt><dd id="workload">—</dd></div>
+        <div><dt>Maximum VUs</dt><dd id="maximum">—</dd></div>
+      </dl>
+      <h3>Thresholds</h3>
+      <ul id="thresholds"></ul>
+    </details>
+
+    <section id="result" hidden aria-labelledby="result-heading">
+      <h2 id="result-heading">Lecture summary</h2>
+      <pre id="summary"></pre>
+      <details id="diagnostic" hidden><summary>Runner messages</summary><pre id="messages"></pre></details>
+    </section>
+    <section id="dashboard" aria-labelledby="chart-heading">
+      <h2 id="chart-heading">k6 dashboard</h2>
+      <p id="chart-note" class="empty">Start a test to see live k6 charts.</p>
+      <div id="viewer"></div>
+    </section>
+    <noscript>Enable JavaScript to run a test and view its progress.</noscript>
+  </main>
+</body>
+</html>
