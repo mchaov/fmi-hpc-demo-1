@@ -14,6 +14,8 @@ docker compose up --build -d
 
 This builds local images and starts the main lab stack.
 
+After updating the load-test scripts in an existing checkout, rebuild their on-demand image with `docker compose --profile loadtest build k6`.
+
 ## Check The Stack
 
 Useful checks:
@@ -33,7 +35,7 @@ curl http://localhost:3000/api/health
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3000`
 
-Grafana dashboards are under the `HPC Demo` folder.
+Grafana dashboards are under the `HPC Demo` folder. Anyone who can reach the published Grafana port has anonymous organization-admin access, including dashboard editing.
 
 ## Run The Smoke Test
 
@@ -47,6 +49,8 @@ This validates:
 - fast-path request handling
 - Prometheus remote-write from `k6`
 - the basic summary and threshold flow
+
+The final `Smoke result` includes a Prometheus readback after k6 flushes its metrics. It waits up to 15 seconds for a request sample unique to this invocation, even when you reuse a test run ID.
 
 ## Run The Teaching Scenarios
 
@@ -80,6 +84,8 @@ Custom breakpoint ramp:
 ```bash
 docker compose --profile loadtest run --rm -e BREAKPOINT_STEP_DURATION=60s -e BREAKPOINT_MAX_VUS=200 k6 run /scripts/breakpoint.js
 ```
+
+The breakpoint summary lists completed stages with observed requests, error rate, and p95 latency. The last passing stage meets both limits. The stop phase identifies the ramp or ramp-down in progress at the end of the run.
 
 Explicit run id:
 

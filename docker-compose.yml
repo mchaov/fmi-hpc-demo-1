@@ -169,7 +169,7 @@ services:
     depends_on:
       - api
       - prometheus
-    entrypoint: ["k6"]
+    entrypoint: ["/bin/sh", "/scripts/run.sh"]
     command: ["run", "/scripts/smoke.js"]
 
 volumes:

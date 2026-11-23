@@ -29,6 +29,7 @@ export const options = buildScenarioOptions(metadata, {
   iterations: 5
 }, {
   thresholds: {
+    checks: ['rate==1'],
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<300']
   }
@@ -36,10 +37,14 @@ export const options = buildScenarioOptions(metadata, {
 
 export const handleSummary = createSummaryHandler(metadata);
 
+const smokeRequestOptions = __ENV.SMOKE_INVOCATION
+  ? { tags: { smoke_invocation: __ENV.SMOKE_INVOCATION } }
+  : {};
+
 export default function () {
   const health = http.get(
     `${BASE_URL}/health`,
-    getScenarioRequestOptions(metadata, 'health')
+    getScenarioRequestOptions('health', smokeRequestOptions)
   );
   check(health, {
     'health returns 200': (res) => res.status === 200
@@ -47,7 +52,7 @@ export default function () {
 
   const fast = http.get(
     `${BASE_URL}/api/report?mode=fast`,
-    getScenarioRequestOptions(metadata, 'fast')
+    getScenarioRequestOptions('fast', smokeRequestOptions)
   );
   check(fast, {
     'fast path returns 200': (res) => res.status === 200

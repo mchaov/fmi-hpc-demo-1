@@ -1,7 +1,8 @@
+import exec from 'k6/execution';
+import { breakpointSummary, durationMs, MAX_ERROR_RATE, MAX_P95_MS } from './breakpoint-stages.js';
 import {
   BASELINE_MIX,
   buildScenarioOptions,
-  buildStageMetadata,
   createSummaryHandler,
   describeMix,
   readDurationEnv,
@@ -29,6 +30,15 @@ function buildBreakpointStages(maxVus, stepDuration) {
 }
 
 const breakpointStages = buildBreakpointStages(BREAKPOINT_MAX_VUS, BREAKPOINT_STEP_DURATION);
+const stepMs = durationMs(BREAKPOINT_STEP_DURATION);
+if (stepMs <= 0) throw new Error('BREAKPOINT_STEP_DURATION must be positive.');
+const cooldown = '30s';
+const stageMetrics = {};
+for (const { target } of breakpointStages) {
+  // Empty thresholds collect submetric summaries without changing the run's exit criteria.
+  stageMetrics[`http_req_failed{breakpoint_stage:${target}}`] = [];
+  stageMetrics[`http_req_duration{breakpoint_stage:${target}}`] = [];
+}
 
 const metadata = {
   scenario: 'breakpoint',
@@ -40,31 +50,31 @@ const metadata = {
   workloadMix: describeMix(BASELINE_MIX),
   evaluationMode: 'threshold',
   thresholdSummary: [
-    'http_req_failed rate < 0.05 with abort after 30s of sustained breach',
-    'http_req_duration p(95) < 1200ms with abort after 30s of sustained breach'
+    `http_req_failed rate < ${MAX_ERROR_RATE}, abort evaluation begins after 30s`,
+    `http_req_duration p(95) < ${MAX_P95_MS}ms, abort evaluation begins after 30s`
   ],
-  notes: 'Step ramp to identify the last passing capacity stage.',
-  breakpointStages: buildStageMetadata(breakpointStages)
+  notes: 'Each completed ramp stage is evaluated using its own requests.'
 };
 
 export const options = buildScenarioOptions(metadata, {
   executor: 'ramping-vus',
   stages: [
     ...breakpointStages,
-    { duration: '30s', target: 0 }
+    { duration: cooldown, target: 0 }
   ]
 }, {
   thresholds: {
+    ...stageMetrics,
     http_req_failed: [
       {
-        threshold: 'rate<0.05',
+        threshold: `rate<${MAX_ERROR_RATE}`,
         abortOnFail: true,
         delayAbortEval: '30s'
       }
     ],
     http_req_duration: [
       {
-        threshold: 'p(95)<1200',
+        threshold: `p(95)<${MAX_P95_MS}`,
         abortOnFail: true,
         delayAbortEval: '30s'
       }
@@ -72,15 +82,19 @@ export const options = buildScenarioOptions(metadata, {
   }
 });
 
-export const handleSummary = createSummaryHandler(metadata);
+export const handleSummary = createSummaryHandler(metadata, (data, passed) =>
+  breakpointSummary(data, passed, breakpointStages, stepMs, durationMs(cooldown)));
 
 export default function () {
   const mode = weightedReportMode(BASELINE_MIX);
+  const index = Math.floor((Date.now() - exec.scenario.startTime) / stepMs);
+  const stage = String(breakpointStages[index]?.target ?? 'ramp-down');
+  const overrides = { tags: { breakpoint_stage: stage } };
 
   if (mode === 'search') {
-    runSearch('capacity', metadata);
+    runSearch('capacity', metadata, overrides);
     return;
   }
 
-  runReportMode(mode, metadata);
+  runReportMode(mode, metadata, overrides);
 }
